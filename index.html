@@ -9,7 +9,11 @@
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
     height: 100%;
+    width: 100%;
     overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
     font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
     background: #050810;
     color: #e8d7a0;
@@ -17,7 +21,9 @@
     user-select: none;
   }
   #game {
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100vw;
     height: 100vh;
     height: 100dvh;
@@ -97,7 +103,10 @@ letter-spacing: 0.2em;
 }
 
 /* ノベル */
-#novel-scene { justify-content: flex-end; }
+#novel-scene {
+justify-content: flex-end;
+overflow: hidden;
+}
 .bg-layer {
 position: absolute;
 top: 0; left: 0; right: 0; bottom: 0;
@@ -116,15 +125,13 @@ z-index: 0;
 .bg-void { background: #20081a; }
 
 .char-portrait {
-position: absolute;
-top: 5%;
-left: 50%;
-transform: translateX(-50%);
-width: 240px;
-max-width: 65vw;
-height: 36vh;
-max-height: 320px;
+position: relative;
 z-index: 1;
+width: 200px;
+max-width: 50vw;
+aspect-ratio: 1 / 1;
+margin: 14px auto 0;
+flex-shrink: 0;
 }
 .char-card {
 width: 100%;
@@ -135,8 +142,51 @@ display: flex;
 flex-direction: column;
 align-items: center;
 justify-content: center;
-padding: 16px;
+padding: 0;
 position: relative;
+overflow: hidden;
+}
+.char-card.has-img {
+padding: 0;
+}
+.char-img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+display: block;
+}
+.char-card-name-overlay {
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+background: linear-gradient(180deg, transparent, rgba(0,0,0,0.85));
+padding: 18px 10px 8px;
+text-align: center;
+color: inherit;
+}
+.char-card-name-overlay .char-name {
+font-size: 18px;
+text-shadow: 0 0 4px rgba(0,0,0,0.8);
+}
+.char-card-name-overlay .char-title {
+font-size: 9px;
+text-shadow: 0 0 4px rgba(0,0,0,0.8);
+}
+.char-symbol-corner {
+position: absolute;
+top: 6px;
+right: 6px;
+width: 26px;
+height: 26px;
+background: rgba(0, 0, 0, 0.7);
+border: 1px solid currentColor;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 14px;
+z-index: 2;
 }
 .char-symbol {
 font-size: 48px;
@@ -171,11 +221,12 @@ opacity: 0.8;
 .dialog-box {
 position: relative;
 z-index: 2;
-margin: auto 14px 18px;
+margin: auto 14px 32px;
 background: rgba(8, 10, 18, 0.92);
 border: 1px solid #6a5a33;
-padding: 18px 22px 22px;
-min-height: 160px;
+padding: 16px 20px 22px;
+min-height: 140px;
+flex-shrink: 0;
 }
 .speaker {
 font-size: 13px;
@@ -302,6 +353,19 @@ text-align: right;
 .roster-symbol {
 font-size: 26px;
 flex-shrink: 0;
+width: 44px;
+height: 44px;
+display: flex;
+align-items: center;
+justify-content: center;
+border: 1px solid currentColor;
+overflow: hidden;
+position: relative;
+}
+.roster-symbol img {
+width: 100%;
+height: 100%;
+object-fit: cover;
 }
 .roster-info { flex: 1; min-width: 0; }
 .roster-name {
@@ -344,13 +408,41 @@ justify-content: center;
 font-size: 24px;
 background: rgba(0, 0, 0, 0.4);
 color: #5a4f33;
+overflow: hidden;
+position: relative;
 }
 .party-slot.filled {
 border: 1px solid currentColor;
 background: rgba(0, 0, 0, 0.6);
 }
+.party-slot-img {
+position: absolute;
+top: 0; left: 0; right: 0; bottom: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
 .party-slot .slot-name {
 font-size: 8px;
+margin-top: 2px;
+position: relative;
+z-index: 2;
+background: rgba(0,0,0,0.7);
+padding: 1px 4px;
+align-self: stretch;
+text-align: center;
+}
+.party-slot .slot-symbol {
+position: relative;
+z-index: 2;
+background: rgba(0,0,0,0.7);
+border-radius: 50%;
+width: 22px;
+height: 22px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 13px;
 margin-top: 2px;
 }
 .party-confirm {
@@ -509,6 +601,21 @@ opacity: 0.35;
 .ally-card.hit { animation: shake 0.3s; }
 .ally-symbol {
 font-size: 18px;
+width: 36px;
+height: 36px;
+margin: 0 auto;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 4px;
+overflow: hidden;
+position: relative;
+background: rgba(0,0,0,0.4);
+}
+.ally-symbol img {
+width: 100%;
+height: 100%;
+object-fit: cover;
 }
 .ally-name {
 font-size: 9px;
@@ -846,7 +953,22 @@ align-items: center;
 gap: 12px;
 margin-bottom: 8px;
 }
-.codex-entry .ce-sym { font-size: 28px; }
+.codex-entry .ce-sym {
+font-size: 28px;
+width: 56px;
+height: 56px;
+flex-shrink: 0;
+display: flex;
+align-items: center;
+justify-content: center;
+border: 1px solid currentColor;
+overflow: hidden;
+}
+.codex-entry .ce-sym img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
 .codex-entry .ce-name { font-size: 16px; font-weight: 700; }
 .codex-entry .ce-title { font-size: 9px; letter-spacing: 0.25em; opacity: 0.7; margin-top: 2px; }
 .codex-entry .ce-desc {
@@ -1032,18 +1154,18 @@ line-height: 1.6;
 // データ定義
 // ============================
 var CHARS = {
-  kenpou: { name: "憲法", title: "最高法規", symbol: "👑", cls: "c-kenpou", quote: "すべての法は、この私のもとにある。", desc: "全ての法の頂点に立つ最高法規。" },
-  minpou: { name: "民法", title: "私法の女王", symbol: "📜", cls: "c-minpou", quote: "契約は、人と人との信頼の架け橋です。", desc: "明るく社交的な民事法の中核。刑法とは口喧嘩が絶えない仲。" },
-  keihou: { name: "刑法", title: "断罪者", symbol: "⚔", cls: "c-keihou", quote: "罪を犯したなら、我が刃が裁きを下す。", desc: "炎と刃の擬人。クールで毒舌だが情はある。" },
-  minji:  { name: "民事訴訟法", title: "交渉の司令塔", symbol: "📚", cls: "c-minji", quote: "証拠が語るのは、感情ではなく事実です。", desc: "理屈っぽい戦術参謀。冷静沈着で頭脳派。" },
-  keiji:  { name: "刑事訴訟法", title: "追跡者", symbol: "🔗", cls: "c-keiji", quote: "真実を追い、必ず罪を暴き出します。", desc: "執念深い追跡のスペシャリスト。" },
-  kaisha: { name: "会社法", title: "資本の支配者", symbol: "📈", cls: "c-kaisha", quote: "資本こそが、世界を動かす原動力だ。", desc: "計算高くカリスマ的な野心家。" },
-  roudou: { name: "労働基準法", title: "現場の守護者", symbol: "🔧", cls: "c-roudou", quote: "働く人の未来と尊厳、守ってみせる!", desc: "熱血の庶民派。会社法とは犬猿の仲。" },
-  zeihou: { name: "税法", title: "徴収者", symbol: "💰", cls: "c-zeihou", quote: "公平な負担こそ、社会を支える礎です。", desc: "淡々と仕事をこなす徴収マシン。" },
-  gyosei: { name: "行政法", title: "調整官", symbol: "🏛", cls: "c-gyosei", quote: "法の運用を正しく、公正に調整します。", desc: "中立を旨とする調整役。" },
-  chizai: { name: "知的財産法", title: "創造の守護者", symbol: "💡", cls: "c-chizai", quote: "創造は尊く、模倣から守られるべきものです。", desc: "繊細で芸術家気質。独創性を何より愛する。" },
-  narrator: { name: "", title: "", symbol: "", cls: "c-narrator" },
-  enemy:   { name: "偽・憲法", title: "簒奪者", symbol: "⚖", cls: "c-enemy" }
+  kenpou: { name: "憲法", title: "最高法規", symbol: "👑", img: "images/kenpou.png", cls: "c-kenpou", quote: "すべての法は、この私のもとにある。", desc: "全ての法の頂点に立つ最高法規。" },
+  minpou: { name: "民法", title: "私法の女王", symbol: "📜", img: "images/minpou.png", cls: "c-minpou", quote: "契約は、人と人との信頼の架け橋です。", desc: "明るく社交的な民事法の中核。刑法とは口喧嘩が絶えない仲。" },
+  keihou: { name: "刑法", title: "断罪者", symbol: "⚔", img: "images/keihou.png", cls: "c-keihou", quote: "罪を犯したなら、我が刃が裁きを下す。", desc: "炎と刃の擬人。クールで毒舌だが情はある。" },
+  minji:  { name: "民事訴訟法", title: "交渉の司令塔", symbol: "📚", img: "images/minji.png", cls: "c-minji", quote: "証拠が語るのは、感情ではなく事実です。", desc: "理屈っぽい戦術参謀。冷静沈着で頭脳派。" },
+  keiji:  { name: "刑事訴訟法", title: "追跡者", symbol: "🔗", img: "images/keiji.png", cls: "c-keiji", quote: "真実を追い、必ず罪を暴き出します。", desc: "執念深い追跡のスペシャリスト。" },
+  kaisha: { name: "会社法", title: "資本の支配者", symbol: "📈", img: "images/kaisha.png", cls: "c-kaisha", quote: "資本こそが、世界を動かす原動力だ。", desc: "計算高くカリスマ的な野心家。" },
+  roudou: { name: "労働基準法", title: "現場の守護者", symbol: "🔧", img: "images/roudou.png", cls: "c-roudou", quote: "働く人の未来と尊厳、守ってみせる!", desc: "熱血の庶民派。会社法とは犬猿の仲。" },
+  zeihou: { name: "税法", title: "徴収者", symbol: "💰", img: "images/zeihou.png", cls: "c-zeihou", quote: "公平な負担こそ、社会を支える礎です。", desc: "淡々と仕事をこなす徴収マシン。" },
+  gyosei: { name: "行政法", title: "調整官", symbol: "🏛", img: "images/gyosei.png", cls: "c-gyosei", quote: "法の運用を正しく、公正に調整します。", desc: "中立を旨とする調整役。" },
+  chizai: { name: "知的財産法", title: "創造の守護者", symbol: "💡", img: "images/chizai.png", cls: "c-chizai", quote: "創造は尊く、模倣から守られるべきものです。", desc: "繊細で芸術家気質。独創性を何より愛する。" },
+  narrator: { name: "", title: "", symbol: "", img: null, cls: "c-narrator" },
+  enemy:   { name: "偽・憲法", title: "簒奪者", symbol: "⚖", img: null, cls: "c-enemy" }
 };
 
 var STATS = {
@@ -1154,6 +1276,47 @@ function getExpToNext(lv) {
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// ============================
+// 画像ヘルパー
+// ============================
+// 大きな立ち絵カード（ノベル画面・加入演出用）
+function bigCardHTML(charKey) {
+  var c = CHARS[charKey];
+  if (!c) return "";
+  if (c.img) {
+    return '<div class="char-card has-img ' + c.cls + '">' +
+      '<img class="char-img" src="' + c.img + '" alt="' + c.name + '" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">' +
+      '<div style="display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:16px">' +
+        '<div class="char-symbol">' + c.symbol + '</div>' +
+        '<div class="char-name">' + c.name + '</div>' +
+        '<div class="char-title">' + c.title + '</div>' +
+      '</div>' +
+      '<div class="char-symbol-corner">' + c.symbol + '</div>' +
+      '<div class="char-card-name-overlay">' +
+        '<div class="char-name">' + c.name + '</div>' +
+        '<div class="char-title">' + c.title + '</div>' +
+      '</div>' +
+    '</div>';
+  } else {
+    return '<div class="char-card ' + c.cls + '" style="padding:16px">' +
+      '<div class="char-symbol">' + c.symbol + '</div>' +
+      '<div class="char-name">' + c.name + '</div>' +
+      '<div class="char-title">' + c.title + '</div>' +
+    '</div>';
+  }
+}
+
+// 小さいシンボル（編成画面のロスター、図鑑、ally-cardなど用）
+function smallSymbolHTML(charKey) {
+  var c = CHARS[charKey];
+  if (!c) return "";
+  if (c.img) {
+    return '<img src="' + c.img + '" alt="' + c.name + '" onerror="this.replaceWith(document.createTextNode(\'' + c.symbol + '\'))">';
+  } else {
+    return c.symbol;
+  }
 }
 
 // ============================
@@ -1272,11 +1435,7 @@ function renderDialog(ev) {
   
   if (ev.char && CHARS[ev.char] && ev.char !== "narrator") {
     var c = CHARS[ev.char];
-    portrait.innerHTML = '<div class="char-card ' + c.cls + '">' +
-      '<div class="char-symbol">' + c.symbol + '</div>' +
-      '<div class="char-name">' + c.name + '</div>' +
-      '<div class="char-title">' + c.title + '</div>' +
-      '</div>';
+    portrait.innerHTML = bigCardHTML(ev.char);
     speaker.className = "speaker " + c.cls;
     speaker.textContent = c.name;
   } else {
@@ -1359,12 +1518,7 @@ function showJoin(ev) {
     state.metChars.push(charKey);
   }
   var c = CHARS[charKey];
-  document.getElementById("join-card-zone").innerHTML =
-    '<div class="char-card ' + c.cls + '">' +
-    '<div class="char-symbol">' + c.symbol + '</div>' +
-    '<div class="char-name">' + c.name + '</div>' +
-    '<div class="char-title">' + c.title + '</div>' +
-    '</div>';
+  document.getElementById("join-card-zone").innerHTML = bigCardHTML(charKey);
   document.getElementById("join-message").innerHTML =
     '<b style="color:#ffeb70">' + c.name + '</b> が、パーティに加わった!<br>' +
     '<small style="opacity:0.7;font-size:10px">タップして続ける</small>';
@@ -1405,7 +1559,7 @@ function renderRoster() {
         card.innerHTML =
           '<div class="num">No.' + (i + 1 < 10 ? '0' + (i + 1) : (i + 1)) + '</div>' +
           '<div class="roster-row">' +
-            '<div class="roster-symbol">' + c.symbol + '</div>' +
+            '<div class="roster-symbol">' + smallSymbolHTML(charKey) + '</div>' +
             '<div class="roster-info">' +
               '<div class="roster-name">' + c.name + '</div>' +
               '<div class="roster-title">' + c.title + '</div>' +
@@ -1421,7 +1575,7 @@ function renderRoster() {
         card.innerHTML =
           '<div class="num">No.' + (i + 1 < 10 ? '0' + (i + 1) : (i + 1)) + '</div>' +
           '<div class="roster-row">' +
-            '<div class="roster-symbol">🔒</div>' +
+            '<div class="roster-symbol" style="font-size:20px">🔒</div>' +
             '<div class="roster-info">' +
               '<div class="roster-name">???</div>' +
               '<div class="roster-title">未加入</div>' +
@@ -1443,7 +1597,14 @@ function renderSlots(min) {
     if (charKey) {
       var c = CHARS[charKey];
       slot.className = "party-slot filled " + c.cls;
-      slot.innerHTML = c.symbol + '<div class="slot-name">' + c.name + '</div>';
+      if (c.img) {
+        slot.innerHTML = 
+          '<img class="party-slot-img" src="' + c.img + '" alt="' + c.name + '" onerror="this.style.display=\'none\'">' +
+          '<div class="slot-symbol">' + c.symbol + '</div>' +
+          '<div class="slot-name">' + c.name + '</div>';
+      } else {
+        slot.innerHTML = c.symbol + '<div class="slot-name">' + c.name + '</div>';
+      }
       (function(ck) {
         slot.onclick = function() { toggleSelect(ck); };
       })(charKey);
@@ -1564,7 +1725,7 @@ function renderBattle() {
         statusHTML += '</div>';
       }
       card.innerHTML = statusHTML +
-        '<div class="ally-symbol">' + c.symbol + '</div>' +
+        '<div class="ally-symbol">' + smallSymbolHTML(ally.key) + '</div>' +
         '<div class="ally-name">' + c.name + '</div>' +
         '<div class="ally-hp">' + ally.hp + '/' + ally.maxHp + '</div>' +
         '<div class="ally-hp-bar"><div class="ally-hp-fill ' + hpClass + '" style="width:' + hpPct + '%"></div></div>';
@@ -1990,7 +2151,7 @@ function switchCodexTab(tab) {
       if (seen) {
         div.innerHTML =
           '<div class="ce-head">' +
-            '<div class="ce-sym">' + c.symbol + '</div>' +
+            '<div class="ce-sym">' + smallSymbolHTML(k) + '</div>' +
             '<div><div class="ce-name">' + c.name + '</div>' +
             '<div class="ce-title">' + c.title + '</div></div>' +
           '</div>' +
@@ -1998,7 +2159,7 @@ function switchCodexTab(tab) {
           '<div class="ce-quote">「' + (c.quote || "") + '」</div>';
       } else {
         div.innerHTML =
-          '<div class="ce-head"><div class="ce-sym">🔒</div>' +
+          '<div class="ce-head"><div class="ce-sym" style="font-size:24px">🔒</div>' +
           '<div><div class="ce-name">???</div><div class="ce-title">未発見</div></div></div>' +
           '<div class="ce-desc">物語を進めて出会おう。</div>';
       }
