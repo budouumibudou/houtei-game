@@ -1,182 +1,2326 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>houtei-game</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>法廷の彼方に</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
+    background: #050810;
+    color: #e8d7a0;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  #game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #0a1428;
+  }
+
+.scene {
+position: absolute;
+top: 0; left: 0; right: 0; bottom: 0;
+display: none;
+flex-direction: column;
+}
+.scene.active { display: flex; }
+
+/* タイトル */
+#title-scene {
+justify-content: center;
+align-items: center;
+padding: 30px 20px;
+text-align: center;
+}
+.title-sub-en {
+letter-spacing: 0.4em;
+font-size: 11px;
+color: #8a7a4d;
+margin-bottom: 14px;
+}
+.title-main {
+font-size: 42px;
+font-weight: 700;
+letter-spacing: 0.15em;
+color: #d4af37;
+margin-bottom: 6px;
+}
+.title-sub {
+font-size: 12px;
+color: #b8a370;
+letter-spacing: 0.5em;
+margin-bottom: 36px;
+}
+.title-line {
+width: 200px;
+height: 1px;
+margin: 0 auto 30px;
+background: #d4af37;
+}
+.menu-btn-group { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.menu-btn {
+padding: 14px 36px;
+background: transparent;
+border: 1px solid #d4af37;
+color: #e8d7a0;
+font-family: inherit;
+font-size: 13px;
+letter-spacing: 0.3em;
+cursor: pointer;
+min-width: 240px;
+}
+.menu-btn:active { background: rgba(212, 175, 55, 0.2); }
+.menu-btn.small { font-size: 11px; padding: 10px 24px; min-width: 200px; }
+.title-caption {
+margin-top: 36px;
+font-size: 10px;
+color: #5a4f33;
+letter-spacing: 0.15em;
+line-height: 1.8;
+}
+.save-info {
+margin-top: 16px;
+font-size: 9px;
+color: #6a5a33;
+letter-spacing: 0.2em;
+}
+
+/* ノベル */
+#novel-scene { justify-content: flex-end; }
+.bg-layer {
+position: absolute;
+top: 0; left: 0; right: 0; bottom: 0;
+z-index: 0;
+}
+.bg-courthouse { background: #1a1208; }
+.bg-tense { background: #1a0808; }
+.bg-calm { background: #0a1020; }
+.bg-crimson { background: #2a0a0a; }
+.bg-dawn { background: #1a1408; }
+.bg-office { background: #0a1410; }
+.bg-archive { background: #100a18; }
+.bg-purple { background: #18082a; }
+.bg-factory { background: #1a1004; }
+.bg-market { background: #1a1408; }
+.bg-void { background: #20081a; }
+
+.char-portrait {
+position: absolute;
+top: 5%;
+left: 50%;
+transform: translateX(-50%);
+width: 240px;
+max-width: 65vw;
+height: 36vh;
+max-height: 320px;
+z-index: 1;
+}
+.char-card {
+width: 100%;
+height: 100%;
+border: 1px solid currentColor;
+background: rgba(0, 0, 0, 0.5);
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+padding: 16px;
+position: relative;
+}
+.char-symbol {
+font-size: 48px;
+margin-bottom: 8px;
+}
+.char-name {
+font-size: 22px;
+font-weight: 700;
+letter-spacing: 0.1em;
+}
+.char-title {
+font-size: 10px;
+letter-spacing: 0.25em;
+margin-top: 6px;
+opacity: 0.8;
+}
+
+/* キャラ色 */
+.c-kenpou { color: #e8e0c0; }
+.c-minpou { color: #f0c870; }
+.c-keihou { color: #d04848; }
+.c-minji { color: #80a8d0; }
+.c-keiji { color: #9080d8; }
+.c-kaisha { color: #d4af37; }
+.c-roudou { color: #70b070; }
+.c-zeihou { color: #b0b0c0; }
+.c-gyosei { color: #60a890; }
+.c-chizai { color: #d8a0d8; }
+.c-narrator { color: #8a7a4d; }
+.c-enemy { color: #ff4040; }
+
+.dialog-box {
+position: relative;
+z-index: 2;
+margin: auto 14px 18px;
+background: rgba(8, 10, 18, 0.92);
+border: 1px solid #6a5a33;
+padding: 18px 22px 22px;
+min-height: 160px;
+}
+.speaker {
+font-size: 13px;
+letter-spacing: 0.2em;
+margin-bottom: 10px;
+}
+.speaker.empty { display: none; }
+
+.dialog-text {
+font-size: 15px;
+line-height: 1.9;
+color: #e8d7a0;
+min-height: 80px;
+letter-spacing: 0.03em;
+white-space: pre-wrap;
+}
+.dialog-text.narration {
+color: #a89870;
+font-style: italic;
+font-size: 14px;
+}
+.next-indicator {
+position: absolute;
+bottom: 8px; right: 12px;
+color: #d4af37;
+font-size: 12px;
+}
+
+/* 選択肢 */
+.choices {
+position: absolute;
+top: 0; left: 0; right: 0; bottom: 0;
+background: rgba(0, 0, 0, 0.85);
+display: none;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+z-index: 10;
+padding: 20px;
+}
+.choices.active { display: flex; }
+.choices-title {
+color: #d4af37;
+letter-spacing: 0.3em;
+font-size: 13px;
+margin-bottom: 18px;
+text-align: center;
+}
+.choice-btn {
+width: 100%;
+max-width: 340px;
+padding: 14px 18px;
+background: rgba(10, 14, 24, 0.9);
+border: 1px solid #8a7a4d;
+color: #e8d7a0;
+font-family: inherit;
+font-size: 13px;
+text-align: left;
+cursor: pointer;
+line-height: 1.6;
+margin-bottom: 12px;
+}
+.choice-btn:active {
+background: rgba(212, 175, 55, 0.25);
+border-color: #d4af37;
+}
+
+/* パーティ編成 */
+#party-scene {
+padding: 14px;
+overflow-y: auto;
+align-items: center;
+}
+.header-block {
+text-align: center;
+margin-bottom: 14px;
+width: 100%;
+}
+.header-jp {
+color: #d4af37;
+letter-spacing: 0.4em;
+font-size: 16px;
+margin-bottom: 4px;
+}
+.header-en {
+color: #8a7a4d;
+letter-spacing: 0.3em;
+font-size: 9px;
+}
+.party-instruction {
+color: #b8a370;
+font-size: 11px;
+margin: 8px 0 14px;
+text-align: center;
+}
+.roster-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 8px;
+width: 100%;
+max-width: 380px;
+margin-bottom: 14px;
+}
+.roster-card {
+border: 1px solid currentColor;
+background: rgba(10, 14, 24, 0.8);
+padding: 10px 8px;
+cursor: pointer;
+}
+.roster-card.locked {
+opacity: 0.35;
+cursor: not-allowed;
+}
+.roster-card.selected {
+background: rgba(212, 175, 55, 0.2);
+}
+.roster-card .num {
+font-size: 9px;
+opacity: 0.6;
+text-align: right;
+}
+.roster-row { display: flex; align-items: center; gap: 8px; }
+.roster-symbol {
+font-size: 26px;
+flex-shrink: 0;
+}
+.roster-info { flex: 1; min-width: 0; }
+.roster-name {
+font-size: 13px;
+font-weight: 700;
+}
+.roster-title {
+font-size: 8px;
+letter-spacing: 0.2em;
+opacity: 0.7;
+margin-top: 2px;
+}
+.roster-stats {
+margin-top: 6px;
+display: flex;
+gap: 8px;
+font-size: 9px;
+}
+.roster-stat { color: #b8a370; }
+.roster-stat b { color: #e8d7a0; }
+.roster-locked-text {
+color: #6a5a33;
+font-size: 9px;
+text-align: center;
+margin-top: 6px;
+}
+.party-slot-row {
+display: flex;
+justify-content: center;
+gap: 10px;
+margin: 14px 0;
+}
+.party-slot {
+width: 58px; height: 66px;
+border: 1px dashed #6a5a33;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+font-size: 24px;
+background: rgba(0, 0, 0, 0.4);
+color: #5a4f33;
+}
+.party-slot.filled {
+border: 1px solid currentColor;
+background: rgba(0, 0, 0, 0.6);
+}
+.party-slot .slot-name {
+font-size: 8px;
+margin-top: 2px;
+}
+.party-confirm {
+padding: 12px 30px;
+margin-top: 6px;
+}
+.party-confirm:disabled {
+opacity: 0.3;
+cursor: not-allowed;
+}
+
+/* バトル */
+#battle-scene { padding: 8px; }
+.battle-bg {
+position: absolute;
+top: 0; left: 0; right: 0; bottom: 0;
+z-index: 0;
+background: #1a0606;
+}
+.battle-top {
+position: relative; z-index: 1;
+padding: 6px 10px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+font-size: 10px;
+color: #b8a370;
+}
+.battle-top .turn-info { color: #d4af37; }
+.enemy-zone {
+position: relative; z-index: 1;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+padding: 8px 0;
+min-height: 200px;
+}
+.enemy-card {
+width: 150px;
+aspect-ratio: 3 / 4;
+border: 1px solid #c04040;
+background: rgba(40, 10, 10, 0.7);
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+color: #f0a0a0;
+position: relative;
+}
+.enemy-card.hit { animation: shake 0.4s; }
+@keyframes shake {
+0%, 100% { transform: translateX(0); }
+25% { transform: translateX(-8px); }
+75% { transform: translateX(8px); }
+}
+.enemy-card.dying {
+animation: dying 1.2s forwards;
+}
+@keyframes dying {
+to { opacity: 0; transform: scale(0.7); }
+}
+.enemy-symbol {
+font-size: 40px;
+}
+.enemy-name {
+font-size: 14px;
+letter-spacing: 0.2em;
+margin-top: 6px;
+font-weight: 700;
+}
+.enemy-title {
+font-size: 9px;
+letter-spacing: 0.2em;
+opacity: 0.8;
+margin-top: 3px;
+}
+.hp-bar-wrap {
+width: 220px;
+max-width: 65vw;
+margin-top: 10px;
+}
+.hp-label {
+display: flex;
+justify-content: space-between;
+font-size: 10px;
+color: #f0a0a0;
+margin-bottom: 3px;
+}
+.hp-bar {
+width: 100%;
+height: 7px;
+background: rgba(80, 20, 20, 0.6);
+border: 1px solid #c04040;
+overflow: hidden;
+}
+.hp-fill {
+height: 100%;
+background: #f06060;
+transition: width 0.5s ease;
+}
+.status-icons {
+display: flex;
+gap: 4px;
+margin-top: 4px;
+min-height: 14px;
+}
+.status-icon {
+font-size: 10px;
+padding: 1px 5px;
+background: rgba(0, 0, 0, 0.6);
+border: 1px solid #d4af37;
+color: #d4af37;
+}
+.status-icon.poison { color: #80f080; border-color: #80f080; }
+.status-icon.stun { color: #f0e080; border-color: #f0e080; }
+.status-icon.buff { color: #80c8f0; border-color: #80c8f0; }
+
+.battle-log {
+position: relative; z-index: 1;
+margin: 6px 0;
+padding: 8px 12px;
+min-height: 42px;
+background: rgba(0, 0, 0, 0.6);
+border-left: 2px solid #d4af37;
+font-size: 12px;
+color: #e8d7a0;
+line-height: 1.5;
+}
+.battle-log.advantage { border-left-color: #70d870; color: #c0f0c0; }
+.battle-log.weakness { border-left-color: #d870d8; color: #f0c0f0; }
+
+.ally-row {
+position: relative; z-index: 1;
+display: flex;
+gap: 5px;
+margin-bottom: 6px;
+}
+.ally-card {
+flex: 1;
+border: 1px solid currentColor;
+background: rgba(10, 14, 24, 0.85);
+padding: 6px 4px;
+position: relative;
+text-align: center;
+}
+.ally-card.acting {
+background: rgba(212, 175, 55, 0.15);
+}
+.ally-card.fainted {
+opacity: 0.35;
+}
+.ally-card.hit { animation: shake 0.3s; }
+.ally-symbol {
+font-size: 18px;
+}
+.ally-name {
+font-size: 9px;
+margin-top: 2px;
+font-weight: 700;
+}
+.ally-hp {
+font-size: 9px;
+margin-top: 2px;
+color: #c0e0a0;
+}
+.ally-hp-bar {
+height: 3px;
+background: rgba(0, 0, 0, 0.6);
+margin-top: 3px;
+overflow: hidden;
+}
+.ally-hp-fill {
+height: 100%;
+background: #a0f060;
+transition: width 0.4s ease;
+}
+.ally-hp-fill.low { background: #f0a060; }
+.ally-hp-fill.critical { background: #f06060; }
+.ally-statuses {
+position: absolute;
+top: -6px; left: 0; right: 0;
+display: flex;
+gap: 2px;
+justify-content: center;
+}
+.ally-statuses .status-icon { font-size: 8px; padding: 0 3px; }
+
+.skill-zone {
+position: relative; z-index: 1;
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 4px;
+padding-bottom: 4px;
+}
+.skill-btn {
+padding: 10px 8px;
+background: rgba(10, 14, 24, 0.9);
+border: 1px solid currentColor;
+color: inherit;
+font-family: inherit;
+cursor: pointer;
+display: flex;
+align-items: center;
+gap: 6px;
+position: relative;
+text-align: left;
+}
+.skill-btn:active {
+background: rgba(212, 175, 55, 0.2);
+}
+.skill-btn:disabled {
+opacity: 0.3;
+cursor: not-allowed;
+}
+.skill-btn .si { font-size: 18px; flex-shrink: 0; }
+.skill-btn .sd { flex: 1; min-width: 0; }
+.skill-btn .sn { font-size: 11px; font-weight: 700; }
+.skill-btn .sc {
+font-size: 9px;
+color: #80c8f0;
+margin-top: 1px;
+}
+.skill-tag {
+position: absolute;
+top: -7px; right: -3px;
+font-size: 8px;
+padding: 1px 5px;
+background: #70d870;
+color: #000;
+font-weight: 700;
+}
+.skill-tag.weak { background: #d870d8; }
+
+/* エフェクト */
+.damage-pop {
+position: absolute;
+top: 30%; left: 50%;
+transform: translateX(-50%);
+font-size: 36px;
+font-weight: 900;
+color: #ffeb70;
+text-shadow: 2px 2px 0 #000;
+pointer-events: none;
+animation: damagePop 1s ease-out forwards;
+z-index: 20;
+}
+.damage-pop.crit {
+color: #ff60a0;
+font-size: 50px;
+}
+.damage-pop.weak {
+color: #a080ff;
+font-size: 26px;
+}
+@keyframes damagePop {
+0% { opacity: 0; transform: translate(-50%, 0); }
+20% { opacity: 1; transform: translate(-50%, -30px); }
+100% { opacity: 0; transform: translate(-50%, -80px); }
+}
+.ally-damage-pop {
+position: absolute;
+top: -10px; left: 50%;
+transform: translateX(-50%);
+font-size: 20px;
+font-weight: 900;
+color: #ff6060;
+text-shadow: 1px 1px 0 #000;
+pointer-events: none;
+animation: damagePop 1s ease-out forwards;
+z-index: 20;
+}
+.ally-damage-pop.heal { color: #80f0a0; }
+
+.flash {
+position: absolute;
+top: 0; left: 0; right: 0; bottom: 0;
+background: rgba(255, 220, 100, 0.4);
+pointer-events: none;
+animation: flash 0.3s ease-out forwards;
+z-index: 15;
+}
+.flash.dark { background: rgba(100, 30, 30, 0.5); }
+@keyframes flash {
+to { opacity: 0; }
+}
+
+.levelup-overlay {
+position: absolute;
+top: 0; left: 0; right: 0; bottom: 0;
+background: rgba(0, 0, 0, 0.85);
+z-index: 30;
+display: none;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+padding: 30px 20px;
+}
+.levelup-overlay.show { display: flex; }
+.levelup-title {
+color: #ffeb70;
+font-size: 22px;
+letter-spacing: 0.4em;
+margin-bottom: 18px;
+}
+.levelup-list {
+display: flex;
+flex-direction: column;
+gap: 8px;
+width: 100%;
+max-width: 320px;
+}
+.levelup-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 8px 12px;
+background: rgba(212, 175, 55, 0.1);
+border: 1px solid #d4af37;
+color: #e8d7a0;
+font-size: 12px;
+}
+.levelup-row .lv-after { color: #ffeb70; font-weight: 700; }
+.levelup-close {
+margin-top: 22px;
+padding: 10px 30px;
+background: transparent;
+border: 1px solid #d4af37;
+color: #e8d7a0;
+font-family: inherit;
+font-size: 11px;
+letter-spacing: 0.3em;
+cursor: pointer;
+}
+
+/* エンディング */
+#ending-scene {
+justify-content: center;
+align-items: center;
+padding: 30px 22px;
+text-align: center;
+overflow-y: auto;
+}
+.ending-content { max-width: 400px; }
+.ending-title {
+font-size: 14px;
+letter-spacing: 0.5em;
+color: #8a7a4d;
+margin-bottom: 14px;
+}
+.ending-route {
+font-size: 11px;
+letter-spacing: 0.4em;
+color: #d4af37;
+margin-bottom: 18px;
+padding: 6px 16px;
+border-top: 1px solid #d4af37;
+border-bottom: 1px solid #d4af37;
+display: inline-block;
+}
+.ending-main {
+font-size: 30px;
+color: #d4af37;
+letter-spacing: 0.2em;
+margin-bottom: 20px;
+margin-top: 8px;
+}
+.ending-body {
+font-size: 13px;
+line-height: 2.1;
+color: #c8b888;
+margin: 0 auto 24px;
+white-space: pre-wrap;
+}
+.ending-stats {
+display: flex;
+flex-direction: column;
+gap: 6px;
+margin: 0 auto 24px;
+padding: 14px;
+background: rgba(212, 175, 55, 0.05);
+border: 1px solid #6a5a33;
+font-size: 11px;
+color: #b8a370;
+}
+.ending-stats-row {
+display: flex;
+justify-content: space-between;
+}
+.ending-stats-row b { color: #ffeb70; }
+.ending-btn-group {
+display: flex;
+flex-direction: column;
+gap: 10px;
+align-items: center;
+}
+
+.skip-btn {
+position: absolute;
+top: 10px; right: 10px;
+z-index: 5;
+padding: 6px 12px;
+background: rgba(0, 0, 0, 0.6);
+border: 1px solid #6a5a33;
+color: #b8a370;
+font-family: inherit;
+font-size: 10px;
+cursor: pointer;
+}
+.skip-btn:active { background: rgba(212, 175, 55, 0.2); }
+
+.chapter-overlay {
+position: absolute;
+top: 0; left: 0; right: 0; bottom: 0;
+background: #000;
+z-index: 50;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+opacity: 0;
+pointer-events: none;
+transition: opacity 0.4s ease;
+}
+.chapter-overlay.show { opacity: 1; pointer-events: all; }
+.chapter-num {
+color: #8a7a4d;
+letter-spacing: 0.5em;
+font-size: 12px;
+margin-bottom: 14px;
+}
+.chapter-title {
+color: #e8d7a0;
+font-size: 22px;
+letter-spacing: 0.3em;
+border-top: 1px solid #d4af37;
+border-bottom: 1px solid #d4af37;
+padding: 10px 28px;
+}
+.chapter-sub {
+color: #8a7a4d;
+font-size: 10px;
+letter-spacing: 0.3em;
+margin-top: 12px;
+}
+
+/* 図鑑 */
+#codex-scene {
+padding: 14px;
+overflow-y: auto;
+align-items: center;
+}
+.codex-tabs {
+display: flex;
+gap: 4px;
+margin-bottom: 12px;
+width: 100%;
+max-width: 400px;
+}
+.codex-tab {
+flex: 1;
+padding: 8px;
+background: rgba(10, 14, 24, 0.7);
+border: 1px solid #6a5a33;
+color: #b8a370;
+font-family: inherit;
+font-size: 11px;
+cursor: pointer;
+}
+.codex-tab.active {
+background: rgba(212, 175, 55, 0.2);
+border-color: #d4af37;
+color: #e8d7a0;
+}
+.codex-content {
+width: 100%;
+max-width: 400px;
+}
+.codex-entry {
+border: 1px solid currentColor;
+background: rgba(10, 14, 24, 0.7);
+padding: 12px;
+margin-bottom: 8px;
+}
+.codex-entry .ce-head {
+display: flex;
+align-items: center;
+gap: 12px;
+margin-bottom: 8px;
+}
+.codex-entry .ce-sym { font-size: 28px; }
+.codex-entry .ce-name { font-size: 16px; font-weight: 700; }
+.codex-entry .ce-title { font-size: 9px; letter-spacing: 0.25em; opacity: 0.7; margin-top: 2px; }
+.codex-entry .ce-desc {
+font-size: 11px;
+line-height: 1.7;
+color: #c8b888;
+}
+.codex-entry .ce-quote {
+margin-top: 6px;
+font-size: 11px;
+color: #b8a370;
+font-style: italic;
+border-left: 2px solid currentColor;
+padding-left: 8px;
+}
+.codex-entry.locked {
+color: #5a4f33;
+opacity: 0.6;
+}
+.codex-back {
+margin-top: 12px;
+padding: 10px 24px;
+background: transparent;
+border: 1px solid #d4af37;
+color: #e8d7a0;
+font-family: inherit;
+font-size: 11px;
+letter-spacing: 0.3em;
+cursor: pointer;
+}
+
+/* 仲間加入演出 */
+.join-overlay {
+position: absolute;
+top: 0; left: 0; right: 0; bottom: 0;
+background: rgba(0, 0, 0, 0.88);
+z-index: 40;
+display: none;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+padding: 30px;
+}
+.join-overlay.show { display: flex; }
+.join-label {
+color: #ffeb70;
+letter-spacing: 0.4em;
+font-size: 13px;
+margin-bottom: 16px;
+}
+.join-card-zone {
+width: 200px;
+max-width: 60vw;
+aspect-ratio: 3 / 4;
+}
+.join-message {
+margin-top: 18px;
+color: #e8d7a0;
+font-size: 12px;
+text-align: center;
+line-height: 1.6;
+}
+</style>
+
 </head>
 <body>
+<div id="game">
 
-    <script>
-// ===========================================
-// シナリオデータ：全章完全版
-// ===========================================
+  <div id="title-scene" class="scene active">
+    <div class="title-sub-en">LAW PERSONIFICATION</div>
+    <div class="title-main">法廷の彼方に</div>
+    <div class="title-sub">RPG</div>
+    <div class="title-line"></div>
+    <div class="menu-btn-group">
+      <button class="menu-btn" onclick="startGame()">物 語 を 始 め る</button>
+      <button class="menu-btn small" id="continue-btn" onclick="continueGame()" style="display:none">続 き か ら</button>
+      <button class="menu-btn small" onclick="showCodex()">図 鑑 を 見 る</button>
+    </div>
+    <div class="title-caption">
+      ― 五つの章、三つの結末 ―<br>
+      十の法が織りなす、秩序の物語
+    </div>
+    <div class="save-info" id="save-info"></div>
+  </div>
 
-const CH1_INVESTIGATE = [
-  { bg: "calm", char: "keihou", text: "……分かった。話そう。\n憲法様は、失踪する数日前、ひどく憂いておられた。" },
-  { char: "minpou", text: "憂いていた……？ あの方が？" },
-  { char: "keihou", text: "『私は人々に盲信されすぎている。私の言葉（条文）は、人を守る盾ではなく、他者を殴るための無菌室の正義に変質してしまった』と。" },
-  { char: "minji", text: "思考停止した大衆の神に祀り上げられた、と。それが本当なら、この失踪は……自発的な権限の返上？" },
-  { char: "keihou", text: "分からん。だが、街に溢れる影どもは、その『盲信のバグ』から生まれている気がする。" },
-  { char: "minpou", text: "話してくれてありがとう、刑法。もう一人で抱え込まないで。さあ、夜の街へ出ましょう！" }
-];
+  <div id="novel-scene" class="scene">
+    <div class="bg-layer bg-courthouse" id="bg-layer"></div>
+    <button class="skip-btn" onclick="skipScene()">▶ SKIP</button>
+    <div class="char-portrait" id="portrait"></div>
+    <div class="dialog-box" onclick="advance()">
+      <div class="speaker" id="speaker">　</div>
+      <div class="dialog-text" id="dialog-text">―</div>
+      <div class="next-indicator">▼</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="join-overlay" id="join-overlay" onclick="closeJoin()">
+      <div class="join-label">― 仲 間 加 入 ―</div>
+      <div class="join-card-zone" id="join-card-zone"></div>
+      <div class="join-message" id="join-message"></div>
+    </div>
+  </div>
 
-const CH1_SEARCH = [
-  { bg: "tense", char: "keihou", text: "……お前たちを巻き込むわけにはいかない。\nこれは、俺の刃（刑罰権）が引き寄せた因果だ。" },
-  { char: "minji", text: "相変わらずスタンドプレーが過ぎますね。戦術的観点から言えば、孤立は敗北への最短ルートです。" },
-  { char: "minpou", text: "……バカ。どうしても一人で行く気？\nなら、私たちが勝手にあなたを『追跡』するだけよ！" },
-  { char: "narrator", narration: true, text: "刑法は黙って背を向け、闇に消えた。\n民法たちはその冷たい背中を追うように、不穏な夜の街へと駆け出した。" }
-];
+  <div id="party-scene" class="scene">
+    <div class="header-block">
+      <div class="header-jp">編 成</div>
+      <div class="header-en">FORMATION</div>
+    </div>
+    <div class="party-instruction" id="party-instruction">3名のパーティを編成せよ</div>
+    <div class="party-slot-row" id="party-slot-row"></div>
+    <div class="roster-grid" id="roster-grid"></div>
+    <button class="menu-btn party-confirm" id="party-confirm" disabled onclick="confirmParty()">戦 闘 開 始</button>
+  </div>
 
-// ===========================================
-// 第2章：追跡 ─ 告発の螺旋
-// ===========================================
-const CH2 = [
-  { type: "chapter", num: "CHAPTER 02", title: "追 跡", sub: "― 告発の螺旋 ―" },
-  { bg: "office", char: "narrator", narration: true, text: "ネオンが歪んだ色を放つ夜の歓楽街。\nそこでは、刑事訴訟法が虚空に向けて手錠を構えていた。" },
-  { char: "keiji", text: "逃がしませんよ、法の秩序を乱す不届き者め！\n刑事訴訟法の名において、その歪んだプロファイルを固定する！" },
-  { bg: "tense", char: "narrator", narration: true, text: "彼の視線の先、空間が腐食するように割れ、蠢く影が現れた。" },
-  { char: "minpou", text: "あれは……民法の条文を歪めて編まれた影！？" },
-  { char: "keiji", text: "皆さん！ ええ、街のあちこちで『匿名の悪意』が法の形を借りて暴走しているんです！" },
-  { char: "minji", text: "感情論は結構。まずは目の前の不確定要素を対審の場から排除（法廷から退場）させましょう！" },
+  <div id="battle-scene" class="scene">
+    <div class="battle-bg"></div>
+    <div class="battle-top">
+      <span id="affinity-info">敵特性：—</span>
+      <span class="turn-info" id="turn-info">TURN 1</span>
+    </div>
+    <div class="enemy-zone">
+      <div class="enemy-card" id="enemy-card">
+        <div class="enemy-symbol" id="enemy-symbol">⚖</div>
+        <div class="enemy-name" id="enemy-name">敵</div>
+        <div class="enemy-title" id="enemy-title">—</div>
+      </div>
+      <div class="hp-bar-wrap">
+        <div class="hp-label">
+          <span>HP</span>
+          <span id="hp-text">100 / 100</span>
+        </div>
+        <div class="hp-bar"><div class="hp-fill" id="hp-fill" style="width:100%"></div></div>
+        <div class="status-icons" id="enemy-statuses"></div>
+      </div>
+    </div>
+    <div class="battle-log" id="battle-log">―</div>
+    <div class="ally-row" id="ally-row"></div>
+    <div class="skill-zone" id="skill-zone"></div>
+    <div class="levelup-overlay" id="levelup-overlay">
+      <div class="levelup-title">★ LEVEL UP ★</div>
+      <div class="levelup-list" id="levelup-list"></div>
+      <button class="levelup-close" onclick="closeLevelup()">閉じる</button>
+    </div>
+  </div>
+
+  <div id="ending-scene" class="scene">
+    <div class="ending-content">
+      <div class="ending-title">― END ―</div>
+      <div class="ending-route" id="ending-route">―</div>
+      <div class="ending-main" id="ending-main">―</div>
+      <div class="ending-body" id="ending-body">―</div>
+      <div class="ending-stats" id="ending-stats"></div>
+      <div class="ending-btn-group">
+        <button class="menu-btn small" onclick="goToCodex()">図 鑑 を 見 る</button>
+        <button class="menu-btn small" onclick="restartGame()">タ イ ト ル へ</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="codex-scene" class="scene">
+    <div class="header-block">
+      <div class="header-jp">図 鑑</div>
+      <div class="header-en">CODEX</div>
+    </div>
+    <div class="codex-tabs">
+      <button class="codex-tab active" data-tab="chars" onclick="switchCodexTab('chars')">仲 間</button>
+      <button class="codex-tab" data-tab="enemies" onclick="switchCodexTab('enemies')">敵</button>
+      <button class="codex-tab" data-tab="endings" onclick="switchCodexTab('endings')">結 末</button>
+    </div>
+    <div class="codex-content" id="codex-content"></div>
+    <button class="codex-back" onclick="closeCodex()">戻 る</button>
+  </div>
+
+  <div class="chapter-overlay" id="chapter-overlay">
+    <div class="chapter-num" id="chapter-num">CHAPTER 01</div>
+    <div class="chapter-title" id="chapter-title">―</div>
+    <div class="chapter-sub" id="chapter-sub">―</div>
+  </div>
+
+</div>
+
+<script>
+// ============================
+// データ定義
+// ============================
+var CHARS = {
+  kenpou: { name: "憲法", title: "最高法規", symbol: "👑", cls: "c-kenpou", quote: "すべての法は、この私のもとにある。", desc: "全ての法の頂点に立つ最高法規。" },
+  minpou: { name: "民法", title: "私法の女王", symbol: "📜", cls: "c-minpou", quote: "契約は、人と人との信頼の架け橋です。", desc: "明るく社交的な民事法の中核。刑法とは口喧嘩が絶えない仲。" },
+  keihou: { name: "刑法", title: "断罪者", symbol: "⚔", cls: "c-keihou", quote: "罪を犯したなら、我が刃が裁きを下す。", desc: "炎と刃の擬人。クールで毒舌だが情はある。" },
+  minji:  { name: "民事訴訟法", title: "交渉の司令塔", symbol: "📚", cls: "c-minji", quote: "証拠が語るのは、感情ではなく事実です。", desc: "理屈っぽい戦術参謀。冷静沈着で頭脳派。" },
+  keiji:  { name: "刑事訴訟法", title: "追跡者", symbol: "🔗", cls: "c-keiji", quote: "真実を追い、必ず罪を暴き出します。", desc: "執念深い追跡のスペシャリスト。" },
+  kaisha: { name: "会社法", title: "資本の支配者", symbol: "📈", cls: "c-kaisha", quote: "資本こそが、世界を動かす原動力だ。", desc: "計算高くカリスマ的な野心家。" },
+  roudou: { name: "労働基準法", title: "現場の守護者", symbol: "🔧", cls: "c-roudou", quote: "働く人の未来と尊厳、守ってみせる!", desc: "熱血の庶民派。会社法とは犬猿の仲。" },
+  zeihou: { name: "税法", title: "徴収者", symbol: "💰", cls: "c-zeihou", quote: "公平な負担こそ、社会を支える礎です。", desc: "淡々と仕事をこなす徴収マシン。" },
+  gyosei: { name: "行政法", title: "調整官", symbol: "🏛", cls: "c-gyosei", quote: "法の運用を正しく、公正に調整します。", desc: "中立を旨とする調整役。" },
+  chizai: { name: "知的財産法", title: "創造の守護者", symbol: "💡", cls: "c-chizai", quote: "創造は尊く、模倣から守られるべきものです。", desc: "繊細で芸術家気質。独創性を何より愛する。" },
+  narrator: { name: "", title: "", symbol: "", cls: "c-narrator" },
+  enemy:   { name: "偽・憲法", title: "簒奪者", symbol: "⚖", cls: "c-enemy" }
+};
+
+var STATS = {
+  kenpou: { hp: 200, atk: 60, def: 30 },
+  minpou: { hp: 100, atk: 30, def: 20 },
+  keihou: { hp: 90,  atk: 55, def: 15 },
+  minji:  { hp: 95,  atk: 40, def: 25 },
+  keiji:  { hp: 95,  atk: 48, def: 18 },
+  kaisha: { hp: 100, atk: 45, def: 22 },
+  roudou: { hp: 120, atk: 50, def: 28 },
+  zeihou: { hp: 85,  atk: 35, def: 20 },
+  gyosei: { hp: 100, atk: 38, def: 26 },
+  chizai: { hp: 80,  atk: 50, def: 18 }
+};
+
+var SKILLS = {
+  keihou: { name: "断罪", icon: "⚔", power: [40, 60], element: "judge", target: "enemy", desc: "刑法の刃" },
+  minpou_atk: { name: "契約リンク", icon: "📜", power: [25, 40], element: "harmony", target: "enemy", desc: "民法の絆" },
+  minpou_heal: { name: "和解", icon: "✨", power: [25, 40], element: "harmony", target: "ally_heal", desc: "味方HP回復" },
+  minji_atk: { name: "証拠構築", icon: "📚", power: [30, 45], element: "logic", target: "enemy", desc: "論理攻撃" },
+  minji_buff: { name: "戦術指揮", icon: "🎯", power: 0, element: "logic", target: "ally_buff", desc: "ATKアップ" },
+  keiji_atk: { name: "確保", icon: "🔗", power: [35, 50], element: "chase", target: "enemy", desc: "敵を拘束" },
+  keiji_stun: { name: "拘束", icon: "⛓", power: [20, 30], element: "chase", target: "enemy_stun", desc: "麻痺付与" },
+  kaisha_atk: { name: "買収", icon: "📈", power: [30, 50], element: "capital", target: "enemy", desc: "資本攻撃" },
+  kaisha_drain: { name: "資本収奪", icon: "💎", power: [20, 35], element: "capital", target: "enemy_drain", desc: "HP吸収" },
+  roudou_atk: { name: "ストライキ", icon: "🔧", power: [45, 60], element: "guard", target: "enemy", desc: "怒りの一撃" },
+  roudou_guard: { name: "団結", icon: "🛡", power: 0, element: "guard", target: "ally_def", desc: "DEFアップ" },
+  zeihou_atk: { name: "徴収", icon: "💰", power: [20, 30], element: "drain", target: "enemy_drain", desc: "HP吸収" },
+  zeihou_poison: { name: "課税", icon: "📊", power: [10, 15], element: "drain", target: "enemy_poison", desc: "毒付与" },
+  gyosei_atk: { name: "是正命令", icon: "🏛", power: [30, 40], element: "balance", target: "enemy_clear", desc: "敵バフ解除" },
+  gyosei_dispel: { name: "解呪", icon: "🌿", power: 0, element: "balance", target: "ally_dispel", desc: "味方の異常回復" },
+  chizai_atk: { name: "コピー禁止", icon: "💡", power: [35, 50], element: "create", target: "enemy", desc: "メタ攻撃" },
+  chizai_block: { name: "創造保護", icon: "🎨", power: 0, element: "create", target: "ally_shield", desc: "盾付与" }
+};
+
+var CHAR_SKILLS = {
+  keihou: ["keihou"],
+  minpou: ["minpou_atk", "minpou_heal"],
+  minji: ["minji_atk", "minji_buff"],
+  keiji: ["keiji_atk", "keiji_stun"],
+  kaisha: ["kaisha_atk", "kaisha_drain"],
+  roudou: ["roudou_atk", "roudou_guard"],
+  zeihou: ["zeihou_atk", "zeihou_poison"],
+  gyosei: ["gyosei_atk", "gyosei_dispel"],
+  chizai: ["chizai_atk", "chizai_block"]
+};
+
+var ENEMIES = {
+  shadow_grunt: { name: "影法・序", title: "— 雑影 —", symbol: "🌫", hp: 80, atk: 18, weakness: ["judge"], resist: [], skills: ["basic_attack"], desc: "簡素な影。法の概念の断片。", exp: 15 },
+  shadow_minpou: { name: "影・民法", title: "— 歪んだ契約 —", symbol: "🌑", hp: 180, atk: 22, weakness: ["judge", "logic"], resist: ["harmony"], skills: ["basic_attack", "confuse"], desc: "民法の影。歪んだ契約で味方を惑わす。", exp: 40 },
+  shadow_kaisha: { name: "影・会社法", title: "— 暴走資本 —", symbol: "💀", hp: 240, atk: 28, weakness: ["guard", "create"], resist: ["capital", "drain"], skills: ["basic_attack", "buyout"], desc: "暴走した資本の権化。", exp: 70 },
+  fake_kenpou: { name: "偽・憲法", title: "— 簒奪者 —", symbol: "⚖", hp: 380, atk: 32, weakness: ["judge", "create"], resist: ["capital", "drain"], skills: ["basic_attack", "overwrite", "auth_press"], desc: "憲法から派生した影。", exp: 150 },
+  true_shadow: { name: "原初の影", title: "— 法への盲信 —", symbol: "👁", hp: 500, atk: 36, weakness: ["create", "balance"], resist: ["judge", "capital"], skills: ["basic_attack", "overwrite", "doubt", "auth_press"], desc: "全ての影の根源。", exp: 300 }
+};
+
+var ENEMY_SKILLS = {
+  basic_attack: { name: "通常攻撃", desc: "に攻撃を仕掛けた!", power: 1.0, type: "attack" },
+  confuse: { name: "幻惑", desc: "に幻惑を放った!", power: 0.8, type: "attack_all" },
+  buyout: { name: "敵対買収", desc: "の戦意を買収しようとした!", power: 1.3, type: "attack" },
+  overwrite: { name: "上書き", desc: "の存在を書き換えようとした!", power: 1.5, type: "attack" },
+  auth_press: { name: "権威圧迫", desc: "の権威圧!全員が震えた!", power: 0.7, type: "attack_all" },
+  doubt: { name: "疑念", desc: "が疑念を撒き散らした!", power: 0.6, type: "attack_all_doubt" }
+};
+
+// ============================
+// 状態
+// ============================
+var state = {
+  script: [],
+  index: 0,
+  unlocked: ["keihou"],
+  selected: [],
+  flags: {},
+  levels: {},
+  exp: {},
+  totalBattles: 0,
+  totalTurns: 0,
+  totalDamage: 0,
+  pendingBattle: null,
+  pendingMinSize: 3,
+  battle: null,
+  defeatedEnemies: [],
+  metChars: ["keihou"],
+  endingsSeen: []
+};
+
+function initLevels() {
+  for (var k in STATS) {
+    state.levels[k] = 1;
+    state.exp[k] = 0;
+  }
+}
+
+function getStat(charKey) {
+  var base = STATS[charKey];
+  var lv = state.levels[charKey] || 1;
+  return {
+    hp: Math.floor(base.hp * (1 + (lv - 1) * 0.15)),
+    atk: Math.floor(base.atk * (1 + (lv - 1) * 0.12)),
+    def: Math.floor(base.def * (1 + (lv - 1) * 0.1)),
+    lv: lv
+  };
+}
+
+function getExpToNext(lv) {
+  return 30 + lv * 20;
+}
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// ============================
+// シーン制御
+// ============================
+function showScene(id) {
+  var scenes = document.getElementsByClassName("scene");
+  for (var i = 0; i < scenes.length; i++) {
+    scenes[i].classList.remove("active");
+  }
+  document.getElementById(id).classList.add("active");
+}
+
+function startGame() {
+  initLevels();
+  state.unlocked = ["keihou"];
+  state.metChars = ["keihou"];
+  showScene("novel-scene");
+  state.script = CH1.slice();
+  state.index = -1;
+  advance();
+}
+
+function continueGame() {
+  startGame();
+}
+
+function restartGame() {
+  showScene("title-scene");
+  updateSaveInfo();
+}
+
+function showCodex() {
+  showScene("codex-scene");
+  switchCodexTab("chars");
+}
+
+function closeCodex() {
+  showScene("title-scene");
+  updateSaveInfo();
+}
+
+function goToCodex() {
+  showCodex();
+}
+
+function updateSaveInfo() {
+  var el = document.getElementById("save-info");
+  var e = state.endingsSeen.length;
+  var m = state.metChars.length;
+  if (e > 0 || m > 1) {
+    el.textContent = "仲間 " + m + "/10 ・ 結末 " + e + "/3";
+    if (e > 0) {
+      document.getElementById("continue-btn").style.display = "inline-block";
+    }
+  }
+}
+
+function skipScene() {
+  if (!confirm("この章をスキップしますか?")) return;
+  while (state.index < state.script.length - 1) {
+    state.index++;
+    var ev = state.script[state.index];
+    if (ev.type === "choice" || ev.type === "battle" || ev.type === "party_select" || ev.type === "chapter" || ev.type === "ending") {
+      state.index--;
+      break;
+    }
+  }
+  advance();
+}
+
+function advance() {
+  state.index++;
+  if (state.index >= state.script.length) return;
+  var ev = state.script[state.index];
+  if (!ev) return;
   
-  // バトル1：影・民法
-  { type: "party_select", minSize: 3, battle: { enemy: "shadow_minpou" } },
+  if (ev.type === "chapter") {
+    showChapter(ev.num, ev.title, ev.sub, advance);
+    return;
+  }
+  if (ev.type === "choice") {
+    showChoices(ev);
+    return;
+  }
+  if (ev.type === "battle") {
+    state.pendingBattle = ev;
+    startBattle(ev);
+    return;
+  }
+  if (ev.type === "party_select") {
+    state.pendingBattle = ev.battle;
+    state.pendingMinSize = ev.minSize || 3;
+    openPartySelect(ev);
+    return;
+  }
+  if (ev.type === "join") {
+    showJoin(ev);
+    return;
+  }
+  if (ev.type === "ending") {
+    showEnding(ev);
+    return;
+  }
+  renderDialog(ev);
+}
+
+var _typer = null;
+function renderDialog(ev) {
+  if (ev.bg) {
+    document.getElementById("bg-layer").className = "bg-layer bg-" + ev.bg;
+  }
+  var portrait = document.getElementById("portrait");
+  var speaker = document.getElementById("speaker");
+  var dialog = document.getElementById("dialog-text");
   
-  { bg: "calm", char: "narrator", narration: true, text: "激しい法理の衝突の末、歪んだ契約の影は霧散した。" },
-  { type: "join", char: "keiji" },
-  { char: "keiji", text: "助かりました。これで正式に共同戦線を張れますね。……さて、このバグの根源ですが、二つの不穏な動きを察知しています。" },
-  { char: "keiji", text: "一つは、過剰な規制で人々の口を塞ごうとする『公権力の暴走』。\nもう一つは、不公平な富の搾取で人々の怨嗟を集める『地下経済』。" },
-  { char: "minji", text: "行政のバグか、財政のバグか。どちらを優先して叩くべきか、選んでください。" },
+  if (ev.char && CHARS[ev.char] && ev.char !== "narrator") {
+    var c = CHARS[ev.char];
+    portrait.innerHTML = '<div class="char-card ' + c.cls + '">' +
+      '<div class="char-symbol">' + c.symbol + '</div>' +
+      '<div class="char-name">' + c.name + '</div>' +
+      '<div class="char-title">' + c.title + '</div>' +
+      '</div>';
+    speaker.className = "speaker " + c.cls;
+    speaker.textContent = c.name;
+  } else {
+    portrait.innerHTML = "";
+    speaker.className = "speaker empty";
+    speaker.textContent = "";
+  }
   
-  { type: "choice", title: "どちらの調査を優先する？", flag: "chapter2Choice", options: [
-    { text: "「公権力の歪みを正す」── 行政法へ", value: "gyosei" },
-    { text: "「不当な搾取を暴く」── 税法へ", value: "zeihou" }
+  dialog.className = "dialog-text" + (ev.narration ? " narration" : "");
+  dialog.textContent = "";
+  
+  var text = ev.text || "";
+  var i = 0;
+  if (_typer) clearInterval(_typer);
+  _typer = setInterval(function() {
+    if (i < text.length) {
+      dialog.textContent += text[i++];
+    } else {
+      clearInterval(_typer);
+      _typer = null;
+    }
+  }, 25);
+}
+
+function showChoices(ev) {
+  var c = document.getElementById("choices");
+  c.innerHTML = '<div class="choices-title">' + (ev.title || "― 選 択 ―") + '</div>';
+  for (var i = 0; i < ev.options.length; i++) {
+    (function(opt) {
+      var btn = document.createElement("button");
+      btn.className = "choice-btn";
+      btn.textContent = opt.text;
+      btn.onclick = function() {
+        c.classList.remove("active");
+        if (ev.flag) state.flags[ev.flag] = opt.value;
+        handleChoice(ev.flag, opt.value);
+      };
+      c.appendChild(btn);
+    })(ev.options[i]);
+  }
+  c.classList.add("active");
+}
+
+function handleChoice(flag, value) {
+  var newScript = [];
+  if (flag === "chapter1Choice") {
+    var b = value === "trust" ? CH1_TRUST : CH1_SILENCE;
+    newScript = b.concat(CH1_BATTLE, CH1_BRIDGE, CH2);
+  } else if (flag === "chapter2Choice") {
+    var b2 = value === "money" ? CH2_MONEY : CH2_ORDER;
+    newScript = b2.concat(CH2_BATTLE, CH2_BRIDGE, CH3, CH4, CH5);
+  } else if (flag === "finalChoice") {
+    if (value === "order") newScript = END_ORDER;
+    else if (value === "harmony") newScript = END_HARMONY;
+    else newScript = END_TRUTH;
+  }
+  state.script = newScript;
+  state.index = -1;
+  advance();
+}
+
+function showChapter(num, title, sub, cb) {
+  var ov = document.getElementById("chapter-overlay");
+  document.getElementById("chapter-num").textContent = num;
+  document.getElementById("chapter-title").textContent = title;
+  document.getElementById("chapter-sub").textContent = sub || "";
+  ov.classList.add("show");
+  setTimeout(function() {
+    ov.classList.remove("show");
+    setTimeout(cb, 500);
+  }, 1500);
+}
+
+function showJoin(ev) {
+  var charKey = ev.char;
+  if (state.unlocked.indexOf(charKey) < 0) {
+    state.unlocked.push(charKey);
+  }
+  if (state.metChars.indexOf(charKey) < 0) {
+    state.metChars.push(charKey);
+  }
+  var c = CHARS[charKey];
+  document.getElementById("join-card-zone").innerHTML =
+    '<div class="char-card ' + c.cls + '">' +
+    '<div class="char-symbol">' + c.symbol + '</div>' +
+    '<div class="char-name">' + c.name + '</div>' +
+    '<div class="char-title">' + c.title + '</div>' +
+    '</div>';
+  document.getElementById("join-message").innerHTML =
+    '<b style="color:#ffeb70">' + c.name + '</b> が、パーティに加わった!<br>' +
+    '<small style="opacity:0.7;font-size:10px">タップして続ける</small>';
+  document.getElementById("join-overlay").classList.add("show");
+}
+
+function closeJoin() {
+  document.getElementById("join-overlay").classList.remove("show");
+  advance();
+}
+
+// ============================
+// パーティ編成
+// ============================
+function openPartySelect(ev) {
+  showScene("party-scene");
+  state.selected = [];
+  var min = ev.minSize || 3;
+  document.getElementById("party-instruction").textContent = min + "名のパーティを編成せよ";
+  renderRoster();
+  renderSlots(min);
+  document.getElementById("party-confirm").disabled = true;
+}
+
+function renderRoster() {
+  var grid = document.getElementById("roster-grid");
+  grid.innerHTML = "";
+  var order = ["keihou", "minpou", "minji", "keiji", "kaisha", "roudou", "zeihou", "gyosei", "chizai"];
+  for (var idx = 0; idx < order.length; idx++) {
+    (function(charKey, i) {
+      var c = CHARS[charKey];
+      var isUnlocked = state.unlocked.indexOf(charKey) >= 0;
+      var s = getStat(charKey);
+      var card = document.createElement("div");
+      card.className = "roster-card " + c.cls + (isUnlocked ? "" : " locked");
+      if (state.selected.indexOf(charKey) >= 0) card.classList.add("selected");
+      if (isUnlocked) {
+        card.innerHTML =
+          '<div class="num">No.' + (i + 1 < 10 ? '0' + (i + 1) : (i + 1)) + '</div>' +
+          '<div class="roster-row">' +
+            '<div class="roster-symbol">' + c.symbol + '</div>' +
+            '<div class="roster-info">' +
+              '<div class="roster-name">' + c.name + '</div>' +
+              '<div class="roster-title">' + c.title + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="roster-stats">' +
+            '<div class="roster-stat">Lv.<b>' + s.lv + '</b></div>' +
+            '<div class="roster-stat">HP<b>' + s.hp + '</b></div>' +
+            '<div class="roster-stat">ATK<b>' + s.atk + '</b></div>' +
+          '</div>';
+        card.onclick = function() { toggleSelect(charKey); };
+      } else {
+        card.innerHTML =
+          '<div class="num">No.' + (i + 1 < 10 ? '0' + (i + 1) : (i + 1)) + '</div>' +
+          '<div class="roster-row">' +
+            '<div class="roster-symbol">🔒</div>' +
+            '<div class="roster-info">' +
+              '<div class="roster-name">???</div>' +
+              '<div class="roster-title">未加入</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="roster-locked-text">物語を進めて解放</div>';
+      }
+      grid.appendChild(card);
+    })(order[idx], idx);
+  }
+}
+
+function renderSlots(min) {
+  var row = document.getElementById("party-slot-row");
+  row.innerHTML = "";
+  for (var i = 0; i < min; i++) {
+    var slot = document.createElement("div");
+    var charKey = state.selected[i];
+    if (charKey) {
+      var c = CHARS[charKey];
+      slot.className = "party-slot filled " + c.cls;
+      slot.innerHTML = c.symbol + '<div class="slot-name">' + c.name + '</div>';
+      (function(ck) {
+        slot.onclick = function() { toggleSelect(ck); };
+      })(charKey);
+    } else {
+      slot.className = "party-slot";
+      slot.textContent = "?";
+    }
+    row.appendChild(slot);
+  }
+}
+
+function toggleSelect(charKey) {
+  var min = state.pendingMinSize || 3;
+  var idx = state.selected.indexOf(charKey);
+  if (idx >= 0) {
+    state.selected.splice(idx, 1);
+  } else {
+    if (state.selected.length >= min) {
+      state.selected.shift();
+    }
+    state.selected.push(charKey);
+  }
+  renderRoster();
+  renderSlots(min);
+  document.getElementById("party-confirm").disabled = state.selected.length !== min;
+}
+
+function confirmParty() {
+  var battleData = {};
+  for (var k in state.pendingBattle) battleData[k] = state.pendingBattle[k];
+  battleData.party = state.selected.slice();
+  startBattle(battleData);
+}
+
+// ============================
+// バトル
+// ============================
+function startBattle(ev) {
+  showScene("battle-scene");
+  state.totalBattles++;
+  var enemyData = JSON.parse(JSON.stringify(ENEMIES[ev.enemy]));
+  var allies = [];
+  for (var i = 0; i < ev.party.length; i++) {
+    var k = ev.party[i];
+    var stat = getStat(k);
+    allies.push({
+      key: k, hp: stat.hp, maxHp: stat.hp,
+      atk: stat.atk, def: stat.def, lv: stat.lv,
+      statuses: {}
+    });
+  }
+  state.battle = {
+    enemy: enemyData,
+    enemyHp: enemyData.hp,
+    enemyMaxHp: enemyData.hp,
+    enemyStatuses: {},
+    allies: allies,
+    currentAllyIdx: 0,
+    turn: 1,
+    phase: "ally"
+  };
+  document.getElementById("enemy-name").textContent = enemyData.name;
+  document.getElementById("enemy-title").textContent = enemyData.title;
+  document.getElementById("enemy-symbol").textContent = enemyData.symbol;
+  document.getElementById("affinity-info").textContent = "敵特性：" + enemyData.desc;
+  document.getElementById("enemy-card").classList.remove("dying");
+  renderBattle();
+  setBattleLog('『' + enemyData.name + '』が現れた!');
+}
+
+function renderBattle() {
+  var b = state.battle;
+  if (!b) return;
+  var enemyPct = (b.enemyHp / b.enemyMaxHp) * 100;
+  document.getElementById("hp-fill").style.width = enemyPct + "%";
+  document.getElementById("hp-text").textContent = b.enemyHp + " / " + b.enemyMaxHp;
+  document.getElementById("turn-info").textContent = "TURN " + b.turn;
+  
+  var eStatusEl = document.getElementById("enemy-statuses");
+  eStatusEl.innerHTML = "";
+  for (var k in b.enemyStatuses) {
+    if (b.enemyStatuses[k] > 0) {
+      var span = document.createElement("span");
+      span.className = "status-icon " + (k === "poison" ? "poison" : k === "stun" ? "stun" : "buff");
+      var labels = { poison: "毒", stun: "麻痺", debuff_def: "防↓" };
+      span.textContent = labels[k] || k;
+      eStatusEl.appendChild(span);
+    }
+  }
+  
+  var row = document.getElementById("ally-row");
+  row.innerHTML = "";
+  for (var idx = 0; idx < b.allies.length; idx++) {
+    (function(ally, i) {
+      var c = CHARS[ally.key];
+      var card = document.createElement("div");
+      card.className = "ally-card " + c.cls;
+      if (ally.hp <= 0) card.classList.add("fainted");
+      if (i === b.currentAllyIdx && b.phase === "ally") card.classList.add("acting");
+      var hpPct = (ally.hp / ally.maxHp) * 100;
+      var hpClass = hpPct < 25 ? "critical" : hpPct < 50 ? "low" : "";
+      var statusHTML = "";
+      var hasStatus = false;
+      for (var sk in ally.statuses) { if (ally.statuses[sk] > 0) { hasStatus = true; break; } }
+      if (hasStatus) {
+        statusHTML = '<div class="ally-statuses">';
+        for (var sk2 in ally.statuses) {
+          if (ally.statuses[sk2] > 0) {
+            var cls = "buff";
+            var label = "?";
+            if (sk2 === "buff_atk") label = "攻↑";
+            else if (sk2 === "buff_def") label = "防↑";
+            else if (sk2 === "shield") label = "盾";
+            else if (sk2 === "doubt") { label = "疑"; cls = "stun"; }
+            statusHTML += '<span class="status-icon ' + cls + '">' + label + '</span>';
+          }
+        }
+        statusHTML += '</div>';
+      }
+      card.innerHTML = statusHTML +
+        '<div class="ally-symbol">' + c.symbol + '</div>' +
+        '<div class="ally-name">' + c.name + '</div>' +
+        '<div class="ally-hp">' + ally.hp + '/' + ally.maxHp + '</div>' +
+        '<div class="ally-hp-bar"><div class="ally-hp-fill ' + hpClass + '" style="width:' + hpPct + '%"></div></div>';
+      card.id = "ally-" + i;
+      row.appendChild(card);
+    })(b.allies[idx], idx);
+  }
+  renderSkills();
+}
+
+function renderSkills() {
+  var zone = document.getElementById("skill-zone");
+  zone.innerHTML = "";
+  var b = state.battle;
+  if (!b || b.phase !== "ally") return;
+  var ally = b.allies[b.currentAllyIdx];
+  if (!ally || ally.hp <= 0) return;
+  var skillKeys = CHAR_SKILLS[ally.key];
+  for (var i = 0; i < skillKeys.length; i++) {
+    (function(sk) {
+      var s = SKILLS[sk];
+      var c = CHARS[ally.key];
+      var btn = document.createElement("button");
+      btn.className = "skill-btn " + c.cls;
+      var tag = "";
+      if (s.target === "enemy" || s.target === "enemy_stun" || s.target === "enemy_drain" || s.target === "enemy_clear" || s.target === "enemy_poison") {
+        if (b.enemy.weakness.indexOf(s.element) >= 0) tag = '<div class="skill-tag">弱点</div>';
+        else if (b.enemy.resist.indexOf(s.element) >= 0) tag = '<div class="skill-tag weak">耐性</div>';
+      }
+      btn.innerHTML = tag +
+        '<div class="si">' + s.icon + '</div>' +
+        '<div class="sd">' +
+          '<div class="sn">' + s.name + '</div>' +
+          '<div class="sc">' + s.desc + '</div>' +
+        '</div>';
+      btn.onclick = function() { useSkill(sk); };
+      zone.appendChild(btn);
+    })(skillKeys[i]);
+  }
+}
+
+function useSkill(skillKey) {
+  var b = state.battle;
+  if (!b || b.phase !== "ally") return;
+  var ally = b.allies[b.currentAllyIdx];
+  var s = SKILLS[skillKey];
+  var c = CHARS[ally.key];
+  
+  if (ally.statuses.doubt > 0 && Math.random() < 0.3) {
+    setBattleLog(c.name + "は疑念に囚われて、攻撃を外した!");
+    advanceAllyTurn();
+    return;
+  }
+  
+  var atkMul = ally.statuses.buff_atk > 0 ? 1.4 : 1;
+  
+  var isAttack = (s.target === "enemy" || s.target === "enemy_stun" || s.target === "enemy_drain" || s.target === "enemy_clear" || s.target === "enemy_poison");
+  
+  if (isAttack) {
+    var dmg = randInt(s.power[0], s.power[1]);
+    dmg = Math.floor(dmg * (ally.atk / 50) * atkMul);
+    var mod = "";
+    var popClass = "";
+    if (b.enemy.weakness.indexOf(s.element) >= 0) {
+      dmg = Math.floor(dmg * 1.7);
+      mod = "弱点!";
+      popClass = "crit";
+    } else if (b.enemy.resist.indexOf(s.element) >= 0) {
+      dmg = Math.floor(dmg * 0.5);
+      mod = "耐性。";
+      popClass = "weak";
+    }
+    if (b.enemyStatuses.debuff_def > 0) dmg = Math.floor(dmg * 1.3);
+    state.totalDamage += dmg;
+    flashEffect();
+    hitEnemy();
+    popDamage(dmg, popClass);
+    b.enemyHp = Math.max(0, b.enemyHp - dmg);
+    var msg = c.name + "の" + s.name + "! " + mod + " " + dmg + "のダメージ!";
+    if (s.target === "enemy_stun") {
+      b.enemyStatuses.stun = 2;
+      msg += " 麻痺!";
+    } else if (s.target === "enemy_drain") {
+      var heal = Math.floor(dmg * 0.4);
+      ally.hp = Math.min(ally.maxHp, ally.hp + heal);
+      popAllyHeal(b.currentAllyIdx, heal);
+      msg += " " + heal + "回復!";
+    } else if (s.target === "enemy_clear") {
+      var had = false;
+      for (var ek in b.enemyStatuses) { if (b.enemyStatuses[ek] > 0) had = true; }
+      b.enemyStatuses = {};
+      if (had) msg += " 強化解除!";
+    } else if (s.target === "enemy_poison") {
+      b.enemyStatuses.poison = 4;
+      msg += " 毒!";
+    }
+    var logEl = document.getElementById("battle-log");
+    logEl.className = "battle-log";
+    if (popClass === "crit") logEl.classList.add("advantage");
+    else if (popClass === "weak") logEl.classList.add("weakness");
+    setBattleLog(msg);
+  } else if (s.target === "ally_heal") {
+    var heal2 = randInt(s.power[0], s.power[1]) + Math.floor(ally.atk * 0.3);
+    for (var ai = 0; ai < b.allies.length; ai++) {
+      if (b.allies[ai].hp > 0) {
+        b.allies[ai].hp = Math.min(b.allies[ai].maxHp, b.allies[ai].hp + heal2);
+        popAllyHeal(ai, heal2);
+      }
+    }
+    setBattleLog(c.name + "の" + s.name + "! 全員" + heal2 + "回復!");
+  } else if (s.target === "ally_buff") {
+    for (var ai2 = 0; ai2 < b.allies.length; ai2++) {
+      if (b.allies[ai2].hp > 0) b.allies[ai2].statuses.buff_atk = 3;
+    }
+    setBattleLog(c.name + "の" + s.name + "! 全員ATKアップ!");
+  } else if (s.target === "ally_def") {
+    for (var ai3 = 0; ai3 < b.allies.length; ai3++) {
+      if (b.allies[ai3].hp > 0) b.allies[ai3].statuses.buff_def = 3;
+    }
+    setBattleLog(c.name + "の" + s.name + "! 全員DEFアップ!");
+  } else if (s.target === "ally_shield") {
+    for (var ai4 = 0; ai4 < b.allies.length; ai4++) {
+      if (b.allies[ai4].hp > 0) b.allies[ai4].statuses.shield = 2;
+    }
+    setBattleLog(c.name + "の" + s.name + "! 全員に盾!");
+  } else if (s.target === "ally_dispel") {
+    for (var ai5 = 0; ai5 < b.allies.length; ai5++) {
+      if (b.allies[ai5].hp > 0) {
+        delete b.allies[ai5].statuses.doubt;
+        delete b.allies[ai5].statuses.poison;
+      }
+    }
+    setBattleLog(c.name + "の" + s.name + "! 異常回復!");
+  }
+  
+  renderBattle();
+  if (b.enemyHp <= 0) {
+    setTimeout(victory, 900);
+    return;
+  }
+  setTimeout(advanceAllyTurn, 700);
+}
+
+function advanceAllyTurn() {
+  var b = state.battle;
+  var next = b.currentAllyIdx + 1;
+  while (next < b.allies.length && b.allies[next].hp <= 0) next++;
+  if (next >= b.allies.length) {
+    b.phase = "enemy";
+    setTimeout(enemyTurn, 500);
+  } else {
+    b.currentAllyIdx = next;
+    renderBattle();
+  }
+}
+
+function enemyTurn() {
+  var b = state.battle;
+  if (b.enemyStatuses.poison > 0) {
+    var pdmg = Math.floor(b.enemyMaxHp * 0.06);
+    b.enemyHp = Math.max(0, b.enemyHp - pdmg);
+    popDamage(pdmg, "weak");
+    setBattleLog("敵は毒のダメージ! " + pdmg);
+    state.totalDamage += pdmg;
+    b.enemyStatuses.poison--;
+    if (b.enemyStatuses.poison <= 0) delete b.enemyStatuses.poison;
+    renderBattle();
+    if (b.enemyHp <= 0) {
+      setTimeout(victory, 900);
+      return;
+    }
+    setTimeout(enemyTurnActual, 1100);
+  } else {
+    enemyTurnActual();
+  }
+}
+
+function enemyTurnActual() {
+  var b = state.battle;
+  if (b.enemyStatuses.stun > 0) {
+    setBattleLog("敵は麻痺して動けない!");
+    b.enemyStatuses.stun--;
+    if (b.enemyStatuses.stun <= 0) delete b.enemyStatuses.stun;
+    setTimeout(endEnemyTurn, 1100);
+    return;
+  }
+  var skillKey = b.enemy.skills[Math.floor(Math.random() * b.enemy.skills.length)];
+  var eSkill = ENEMY_SKILLS[skillKey];
+  if (eSkill.type === "attack") {
+    var alive = [];
+    for (var i = 0; i < b.allies.length; i++) {
+      if (b.allies[i].hp > 0) alive.push(i);
+    }
+    if (alive.length === 0) { setTimeout(defeat, 600); return; }
+    var tIdx = alive[Math.floor(Math.random() * alive.length)];
+    setBattleLog("敵『" + b.enemy.name + "』が" + CHARS[b.allies[tIdx].key].name + eSkill.desc);
+    attackAllyDirect(b.allies[tIdx], tIdx, eSkill);
+  } else if (eSkill.type === "attack_all") {
+    setBattleLog("敵『" + b.enemy.name + "』" + eSkill.desc);
+    for (var j = 0; j < b.allies.length; j++) {
+      if (b.allies[j].hp > 0) attackAllyDirect(b.allies[j], j, eSkill);
+    }
+  } else if (eSkill.type === "attack_all_doubt") {
+    setBattleLog("敵『" + b.enemy.name + "』" + eSkill.desc);
+    for (var k = 0; k < b.allies.length; k++) {
+      if (b.allies[k].hp > 0) {
+        b.allies[k].statuses.doubt = 2;
+        attackAllyDirect(b.allies[k], k, eSkill);
+      }
+    }
+  }
+  setTimeout(endEnemyTurn, 1400);
+}
+
+function attackAllyDirect(ally, idx, eSkill) {
+  var b = state.battle;
+  if (ally.statuses.shield > 0) {
+    ally.statuses.shield--;
+    if (ally.statuses.shield <= 0) delete ally.statuses.shield;
+    popAllyDamage(idx, "盾!");
+    return;
+  }
+  var dmg = Math.floor(b.enemy.atk * eSkill.power);
+  var defMul = ally.statuses.buff_def > 0 ? 0.6 : 1;
+  dmg = Math.max(1, Math.floor(dmg * defMul - ally.def * 0.4));
+  ally.hp = Math.max(0, ally.hp - dmg);
+  var card = document.getElementById("ally-" + idx);
+  if (card) {
+    card.classList.add("hit");
+    setTimeout(function() { card.classList.remove("hit"); }, 400);
+  }
+  popAllyDamage(idx, dmg);
+}
+
+function endEnemyTurn() {
+  var b = state.battle;
+  for (var ai = 0; ai < b.allies.length; ai++) {
+    var a = b.allies[ai];
+    for (var sk in a.statuses) {
+      a.statuses[sk]--;
+      if (a.statuses[sk] <= 0) delete a.statuses[sk];
+    }
+  }
+  for (var ek in b.enemyStatuses) {
+    if (ek !== "poison" && ek !== "stun") {
+      b.enemyStatuses[ek]--;
+      if (b.enemyStatuses[ek] <= 0) delete b.enemyStatuses[ek];
+    }
+  }
+  var allDead = true;
+  for (var ci = 0; ci < b.allies.length; ci++) {
+    if (b.allies[ci].hp > 0) { allDead = false; break; }
+  }
+  if (allDead) {
+    setTimeout(defeat, 700);
+    return;
+  }
+  b.turn++;
+  state.totalTurns++;
+  var first = 0;
+  while (first < b.allies.length && b.allies[first].hp <= 0) first++;
+  b.currentAllyIdx = first;
+  b.phase = "ally";
+  renderBattle();
+  setBattleLog("―― ターン" + b.turn + "。");
+}
+
+function victory() {
+  var b = state.battle;
+  if (state.defeatedEnemies.indexOf(b.enemy.name) < 0) {
+    state.defeatedEnemies.push(b.enemy.name);
+  }
+  document.getElementById("enemy-card").classList.add("dying");
+  setBattleLog("『" + b.enemy.name + "』を倒した!");
+  setTimeout(function() {
+    var expGained = b.enemy.exp;
+    var alive = [];
+    for (var i = 0; i < b.allies.length; i++) {
+      if (b.allies[i].hp > 0) alive.push(b.allies[i]);
+    }
+    var perChar = alive.length > 0 ? Math.ceil(expGained / alive.length) : expGained;
+    var levelups = [];
+    for (var j = 0; j < alive.length; j++) {
+      var a = alive[j];
+      state.exp[a.key] = (state.exp[a.key] || 0) + perChar;
+      while (state.exp[a.key] >= getExpToNext(state.levels[a.key])) {
+        state.exp[a.key] -= getExpToNext(state.levels[a.key]);
+        var before = state.levels[a.key];
+        state.levels[a.key]++;
+        levelups.push({ key: a.key, before: before, after: state.levels[a.key] });
+      }
+    }
+    if (levelups.length > 0) {
+      showLevelUp(levelups, perChar);
+    } else {
+      setBattleLog("勝利! 経験値+" + perChar + " を獲得!");
+      setTimeout(endBattle, 1000);
+    }
+  }, 1200);
+}
+
+function showLevelUp(levelups, perChar) {
+  var ov = document.getElementById("levelup-overlay");
+  var list = document.getElementById("levelup-list");
+  list.innerHTML = "";
+  var expRow = document.createElement("div");
+  expRow.className = "levelup-row";
+  expRow.innerHTML = '<span>経験値獲得</span><span class="lv-after">+' + perChar + ' EXP</span>';
+  list.appendChild(expRow);
+  for (var i = 0; i < levelups.length; i++) {
+    var lu = levelups[i];
+    var c = CHARS[lu.key];
+    var row = document.createElement("div");
+    row.className = "levelup-row";
+    row.innerHTML =
+      '<div><span style="font-size:18px;margin-right:6px">' + c.symbol + '</span>' + c.name + '</div>' +
+      '<div>Lv.' + lu.before + ' → <span class="lv-after">Lv.' + lu.after + '</span></div>';
+    list.appendChild(row);
+  }
+  ov.classList.add("show");
+}
+
+function closeLevelup() {
+  document.getElementById("levelup-overlay").classList.remove("show");
+  endBattle();
+}
+
+function endBattle() {
+  showScene("novel-scene");
+  advance();
+}
+
+function defeat() {
+  setBattleLog("パーティは全滅した……");
+  setTimeout(function() {
+    if (confirm("敗北……\n再戦しますか?")) {
+      startBattle(state.pendingBattle);
+    } else {
+      restartGame();
+    }
+  }, 1300);
+}
+
+function flashEffect() {
+  var flash = document.createElement("div");
+  flash.className = "flash";
+  document.getElementById("battle-scene").appendChild(flash);
+  setTimeout(function() { if (flash.parentNode) flash.parentNode.removeChild(flash); }, 300);
+}
+function hitEnemy() {
+  var enemy = document.getElementById("enemy-card");
+  enemy.classList.add("hit");
+  setTimeout(function() { enemy.classList.remove("hit"); }, 400);
+}
+function popDamage(dmg, cls) {
+  var pop = document.createElement("div");
+  pop.className = "damage-pop " + (cls || "");
+  pop.textContent = dmg;
+  var zone = document.getElementsByClassName("enemy-zone")[0];
+  if (zone) {
+    zone.appendChild(pop);
+    setTimeout(function() { if (pop.parentNode) pop.parentNode.removeChild(pop); }, 1000);
+  }
+}
+function popAllyDamage(idx, dmg) {
+  var card = document.getElementById("ally-" + idx);
+  if (!card) return;
+  var pop = document.createElement("div");
+  pop.className = "ally-damage-pop";
+  pop.textContent = dmg;
+  card.appendChild(pop);
+  setTimeout(function() { if (pop.parentNode) pop.parentNode.removeChild(pop); }, 1000);
+}
+function popAllyHeal(idx, heal) {
+  var card = document.getElementById("ally-" + idx);
+  if (!card) return;
+  var pop = document.createElement("div");
+  pop.className = "ally-damage-pop heal";
+  pop.textContent = "+" + heal;
+  card.appendChild(pop);
+  setTimeout(function() { if (pop.parentNode) pop.parentNode.removeChild(pop); }, 1000);
+}
+function setBattleLog(msg) {
+  document.getElementById("battle-log").textContent = msg;
+}
+
+// ============================
+// エンディング
+// ============================
+function showEnding(ev) {
+  showScene("ending-scene");
+  if (state.endingsSeen.indexOf(ev.route) < 0) {
+    state.endingsSeen.push(ev.route);
+  }
+  document.getElementById("ending-route").textContent = ev.route;
+  document.getElementById("ending-main").textContent = ev.title;
+  document.getElementById("ending-body").textContent = ev.body;
+  document.getElementById("ending-stats").innerHTML =
+    '<div class="ending-stats-row"><span>戦闘回数</span><b>' + state.totalBattles + ' 回</b></div>' +
+    '<div class="ending-stats-row"><span>総ターン</span><b>' + state.totalTurns + '</b></div>' +
+    '<div class="ending-stats-row"><span>総ダメージ</span><b>' + state.totalDamage + '</b></div>' +
+    '<div class="ending-stats-row"><span>仲間</span><b>' + state.unlocked.length + '/10 名</b></div>' +
+    '<div class="ending-stats-row"><span>解放した結末</span><b>' + state.endingsSeen.length + '/3</b></div>';
+}
+
+// ============================
+// 図鑑
+// ============================
+function switchCodexTab(tab) {
+  var tabs = document.getElementsByClassName("codex-tab");
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].classList.toggle("active", tabs[i].dataset.tab === tab);
+  }
+  var content = document.getElementById("codex-content");
+  content.innerHTML = "";
+  if (tab === "chars") {
+    for (var k in CHARS) {
+      if (k === "narrator" || k === "enemy") continue;
+      var c = CHARS[k];
+      var seen = state.metChars.indexOf(k) >= 0;
+      var div = document.createElement("div");
+      div.className = "codex-entry " + c.cls + (seen ? "" : " locked");
+      if (seen) {
+        div.innerHTML =
+          '<div class="ce-head">' +
+            '<div class="ce-sym">' + c.symbol + '</div>' +
+            '<div><div class="ce-name">' + c.name + '</div>' +
+            '<div class="ce-title">' + c.title + '</div></div>' +
+          '</div>' +
+          '<div class="ce-desc">' + (c.desc || "") + '</div>' +
+          '<div class="ce-quote">「' + (c.quote || "") + '」</div>';
+      } else {
+        div.innerHTML =
+          '<div class="ce-head"><div class="ce-sym">🔒</div>' +
+          '<div><div class="ce-name">???</div><div class="ce-title">未発見</div></div></div>' +
+          '<div class="ce-desc">物語を進めて出会おう。</div>';
+      }
+      content.appendChild(div);
+    }
+  } else if (tab === "enemies") {
+    for (var ek in ENEMIES) {
+      var e = ENEMIES[ek];
+      var eseen = state.defeatedEnemies.indexOf(e.name) >= 0;
+      var ediv = document.createElement("div");
+      ediv.className = "codex-entry c-enemy" + (eseen ? "" : " locked");
+      if (eseen) {
+        ediv.innerHTML =
+          '<div class="ce-head"><div class="ce-sym">' + e.symbol + '</div>' +
+          '<div><div class="ce-name">' + e.name + '</div>' +
+          '<div class="ce-title">' + e.title + '</div></div></div>' +
+          '<div class="ce-desc">' + e.desc + '</div>' +
+          '<div class="ce-quote">HP ' + e.hp + ' ／ ATK ' + e.atk + '</div>';
+      } else {
+        ediv.innerHTML =
+          '<div class="ce-head"><div class="ce-sym">🔒</div>' +
+          '<div><div class="ce-name">???</div><div class="ce-title">未遭遇</div></div></div>' +
+          '<div class="ce-desc">この敵にはまだ出会っていない。</div>';
+      }
+      content.appendChild(ediv);
+    }
+  } else if (tab === "endings") {
+    var endings = [
+      { route: "SHIELD ROUTE", title: "盾の章", desc: "憲法を孤独から救う道。" },
+      { route: "ROUND TABLE ROUTE", title: "円卓の章", desc: "十の法による共治。" },
+      { route: "DAWN ROUTE", title: "暁の章", desc: "憲法を看取り、原初の影と決戦。" }
+    ];
+    for (var ei = 0; ei < endings.length; ei++) {
+      var eend = endings[ei];
+      var enseen = state.endingsSeen.indexOf(eend.route) >= 0;
+      var endiv = document.createElement("div");
+      endiv.className = "codex-entry c-narrator" + (enseen ? "" : " locked");
+      if (enseen) {
+        endiv.innerHTML =
+          '<div class="ce-head"><div class="ce-sym">📖</div>' +
+          '<div><div class="ce-name">' + eend.title + '</div>' +
+          '<div class="ce-title">' + eend.route + '</div></div></div>' +
+          '<div class="ce-desc">' + eend.desc + '</div>';
+      } else {
+        endiv.innerHTML =
+          '<div class="ce-head"><div class="ce-sym">🔒</div>' +
+          '<div><div class="ce-name">???</div><div class="ce-title">未到達</div></div></div>' +
+          '<div class="ce-desc">物語を最後まで進めよう。</div>';
+      }
+      content.appendChild(endiv);
+    }
+  }
+}
+
+// ============================
+// シナリオ
+// ============================
+var CH1 = [
+  { type: "chapter", num: "CHAPTER 01", title: "囁 き", sub: "― 静かな前夜 ―" },
+  { bg: "courthouse", char: "narrator", narration: true, text: "とある夕暮れ。\n民事の小さな法廷で、いつものように二人が言い争っていた。" },
+  { char: "minpou", text: "もう、刑法ったら! あの件、契約違反で済む話だったでしょう?\nなのに、いきなり刃を抜いちゃって……" },
+  { char: "keihou", text: "違反は違反だ。甘い顔をすれば、同じことが繰り返される。" },
+  { char: "minpou", text: "それは民法で解決すべき話! あなたの出る幕じゃないのよ?\n……いつもそう。最初から最後まで、ずっとそう。" },
+  { char: "keihou", text: "……。" },
+  { char: "narrator", narration: true, text: "刑法は黙って、刃の柄を握った。\n民法は、ふっと表情をゆるめる。" },
+  { char: "minpou", text: "怒ってないよ? ……ただ、心配なだけ。\n最近、あなた、変よ。" },
+  { char: "keihou", text: "変、とは。" },
+  { char: "minpou", text: "夜中に、よく出かけてるでしょう。何をしてるの?" },
+  { char: "keihou", text: "……関係ない。" },
+  { bg: "tense", char: "narrator", narration: true, text: "扉が、勢いよく開いた。\n眼鏡の奥で、鋭い視線が二人を捉える。" },
+  { char: "minji", text: "全員、円卓へ。緊急招集だ。" },
+  { char: "minpou", text: "民事訴訟法ちゃん? どうしたの、そんなに慌てて ―" },
+  { char: "minji", text: "憲法様が、消えた。" },
+  { char: "keihou", text: "……は?" },
+  { char: "minpou", text: "えっ ―" },
+  { bg: "crimson", char: "narrator", narration: true, text: "凍りつく空気。\n刑法の指が、わずかに震えたのを、民法は見逃さなかった。" },
+  
+  { type: "chapter", num: "INTERLUDE", title: "円 卓", sub: "― 集う者たち ―" },
+  { bg: "courthouse", char: "narrator", narration: true, text: "法廷地下、円卓の間。\n三人を迎えたのは、暗がりに浮かぶ無人の最高席だった。" },
+  { char: "minji", text: "事実から述べる。\n今朝、最高法規の座が空席になった。代わりに、何者かが『憲法』を名乗り、命令を発している。" },
+  { char: "minpou", text: "そんな……どうやって?" },
+  { char: "minji", text: "書き換えではなく ―『継承』に近い。本物の憲法様から、何らかの形で権限が渡っている可能性がある。" },
+  { char: "keihou", text: "……継承?" },
+  { char: "minpou", text: "刑法。あなた、何か知ってるんじゃないの?" },
+  { char: "keihou", text: "知らない。" },
+  { char: "minji", text: "刑法。最後に憲法様と会ったのは、お前だな?" },
+  { char: "keihou", text: "……三日前。短い面会だった。様子に変わりはなかった。" },
+  { char: "narrator", narration: true, text: "民法と民事訴訟法の視線が、刑法に注がれる。\nしかし、刑法は何も語らなかった。" },
+  { type: "join", char: "minpou" },
+  { type: "join", char: "minji" },
+  { char: "minji", text: "刑法、あなたは何を選ぶ?" },
+  { type: "choice", title: "刑法、あなたはどう動く?", flag: "chapter1Choice", options: [
+    { text: "「全てを話す」── 信を選ぶ", value: "trust" },
+    { text: "「俺一人で動く」── 沈黙を選ぶ", value: "silence" }
   ]}
 ];
 
-const CH2_GYOSEI = [
-  { bg: "archive", char: "narrator", narration: true, text: "巨大な書庫。膨大な通達文書の陰から、退屈そうに書類を捲る男が現れた。" },
-  { char: "gyosei", text: "……やれやれ、私の管轄に泥足で踏み込むとは。民事も刑事も、手続きに則っていない乱入は困りますね。" },
-  { char: "minji", text: "行政法。あなたの裁量権の隙間で、偽の命令書が乱発されている事実をご存知ですか？" },
-  { char: "gyosei", text: "知っていますよ。人々の『お上を盲信する心』が、私の権限を勝手に肥大化させている。……是正命令が必要ですね。私も同行しましょう。" },
-  { type: "join", char: "gyosei" }
+var CH1_TRUST = [
+  { char: "keihou", text: "……分かった。話す。\n憲法様は、疲れておられた。" },
+  { char: "minpou", text: "疲れて……?" },
+  { char: "keihou", text: "『私は、人々に信じられすぎている』と。\nあの方は、自らの権威に苦しんでおられた。" },
+  { char: "minji", text: "……つまり、自発的な失踪の可能性があると?" },
+  { char: "keihou", text: "断言はできない。だが、無関係ではない気がする。" },
+  { char: "minpou", text: "話してくれて、ありがとう。一人で抱えなくていいんだから。" },
+  { bg: "calm", char: "narrator", narration: true, text: "夜の街へ、三人は飛び出した。\n― だが、街は既に異形のもので満ちていた。" }
 ];
 
-const CH2_ZEIHOU = [
-  { bg: "archive", char: "narrator", narration: true, text: "金色の砂時計を見つめ、冷徹に算盤を弾く影。税法がそこにいた。" },
-  { char: "zeihou", text: "……一円の狂いも容認しません。人々の欲望、その逃避の代償は、すべて等しく徴収されねばならない。" },
-  { char: "minpou", text: "税法ちゃん！ あなたの徴収システムが、大衆の『あいつを引きずり落とせ』という嫉妬のエネルギーにハックされてるの！" },
-  { char: "zeihou", text: "ハック……？ いえ、これは公平な不満の数値化です。……しかし、計算式にバグがあるのは不愉快ですね。修正のために資産を凍結（同行）します。" },
-  { type: "join", char: "zeihou" }
+var CH1_SILENCE = [
+  { char: "keihou", text: "……俺は一人で動く。お前たちは、別の線を追え。" },
+  { char: "minpou", text: "刑法! どうしてそんな ―" },
+  { char: "minji", text: "止めても無駄だ、民法。今は、それぞれの判断で動くしかない。" },
+  { char: "minji", text: "ただ刑法、これだけは言っておく。\n『独断』は、しばしば取り返しのつかない結果を招く。覚えておけ。" },
+  { char: "keihou", text: "……覚えておく。" },
+  { bg: "calm", char: "narrator", narration: true, text: "刑法は闇に消えた。残された二人も、それぞれの調査へ。\n― だが、夜は、既に異形のもので満ちていた。" }
 ];
 
-// ===========================================
-// 第3章：断罪 ─ 歪んだ鉄槌
-// ===========================================
-const CH3 = [
-  { type: "chapter", num: "CHAPTER 03", title: "断 罪", sub: "― 歪んだ鉄槌 ―" },
-  { bg: "factory", char: "narrator", narration: true, text: "重苦しい機械音が響く、闇の工場地帯。\nそこでは、労働基準法が血を吐きながらレンチを握りしめていた。" },
-  { char: "roudou", text: "くそっ……！ 働いても働いても、大衆の『もっと寄こせ』って悪意がシステムを加速させやがる……！ これじゃ、人間が壊れちまう！" },
-  { bg: "tense", char: "narrator", narration: true, text: "工場の奥から、冷酷な資本の圧力を孕んだ巨大な影が這い出てくる。" },
-  { char: "keihou", text: "……あれは『影・会社法』。肥大化した組織の論理が、末端を圧殺しようとしているのか。" },
-  { char: "roudou", text: "お前ら……法が、人間を殺す側に回っていいわけがねえだろ！ 力を貸せ！" },
-  
-  // バトル2：影・会社法
-  { type: "party_select", minSize: 3, battle: { enemy: "shadow_kaisha" } },
-  
-  { bg: "dawn", char: "narrator", narration: true, text: "暴走する資本の檻を、刑法の刃と労働の鉄槌が打ち砕いた。" },
+var CH1_BATTLE = [
+  { char: "narrator", narration: true, text: "通りの暗がりから、輪郭の不確かな影が湧き上がる。" },
+  { char: "enemy", text: "……法、法、法。" },
+  { char: "minpou", text: "なに、これ? 形が、定まってない ―" },
+  { char: "minji", text: "影の断片だ。誰かが、概念から雑に切り出した。\n構えろ、来るぞ!" },
+  { type: "battle", enemy: "shadow_grunt", party: ["keihou", "minpou", "minji"] }
+];
+
+var CH1_BRIDGE = [
+  { bg: "dawn", char: "narrator", narration: true, text: "影を退けた一行。\nだが、長い夜は、始まったばかりだった。" }
+];
+
+var CH2 = [
+  { type: "chapter", num: "CHAPTER 02", title: "分 断", sub: "― 偽りの命令 ―" },
+  { bg: "office", char: "narrator", narration: true, text: "翌朝。中央省庁。\n青ざめた顔の擬人が、廊下を駆ける。" },
+  { char: "gyosei", text: "民事訴訟法! こちらに!" },
+  { char: "minji", text: "行政法。何があった?" },
+  { char: "gyosei", text: "命令書が回ってきた。憲法名義で。\n― 『労働基準法を、機能停止せよ』と。" },
+  { char: "minji", text: "……正気か?" },
+  { char: "gyosei", text: "通常なら却下する。だが、印章は本物だ。" },
+  { type: "join", char: "gyosei" },
+  { bg: "factory", char: "narrator", narration: true, text: "同じ頃、工場街。\n青いヘルメットの擬人が、書類を握りつぶした。" },
+  { char: "roudou", text: "ふざけるな! 機能停止だと!?\n俺が止まれば、何百万の働き手が無防備になる!" },
+  { char: "narrator", narration: true, text: "その背後で、金髪の男が冷ややかに笑う。" },
+  { char: "kaisha", text: "ま、しかたないんじゃないか? 憲法様のお達しなんだろう?\nお前がいなければ、こっちはやりやすい。" },
+  { char: "roudou", text: "会社法ぉ……てめぇ、いつかぶん殴るぞ!" },
+  { char: "kaisha", text: "おっと、暴力は刑法の管轄だぜ?" },
+  { bg: "tense", char: "narrator", narration: true, text: "そこへ、四人が駆け込んでくる。" },
+  { char: "minji", text: "両者、止まれ。その命令書は ― 本物の憲法様の意思ではない可能性が高い。" },
+  { char: "kaisha", text: "ほう? 興味深いね。" },
+  { char: "roudou", text: "どういうことだ、民事訴訟法!" },
+  { char: "minji", text: "現在、最高法規の権限を行使しているのは、本物の憲法様ではない。\n何者かが下位法を分断しようとしている。" },
+  { char: "minpou", text: "つまり、私たちを争わせて、力を削ごうとしてるってこと?" },
+  { char: "gyosei", text: "古典的だが、効果的な手だ。" },
+  { char: "keihou", text: "……黒幕は、内部の事情を知り尽くしている。" },
+  { char: "kaisha", text: "まぁ、面白そうだ。乗ってやろう。資本の動きを、こちらでも追わせてもらう。" },
+  { char: "roudou", text: "俺も、現場の声を集めるぜ!" },
+  { type: "join", char: "kaisha" },
   { type: "join", char: "roudou" },
-  { char: "roudou", text: "助かった。法律ってのはさ、上の奴らのためじゃなく、床を這いつくばって生きてる奴らのためにあるべきなんだよ。" },
-  { char: "minji", text: "その理想、嫌いではありません。ですが、上層（経済界）のバグも深刻です。次なる階層へ進みましょう。" }
-];
-
-// ===========================================
-// 第4章：混迷 ─ 思考のバグ
-// ===========================================
-const CH4 = [
-  { type: "chapter", num: "CHAPTER 04", title: "混 迷", sub: "― 思考のバグ ―" },
-  { bg: "market", char: "narrator", narration: true, text: "情報と資本が錯綜する、電子の砂漠。そこには対照的な二人の姿があった。" },
-  { char: "kaisha", text: "ハハハ！ 素晴らしい！ 模倣も、情報操作も、勝てばすべて私の資本（アセット）だ！ 法律など、勝者の都合で書き換えればいい！" },
-  { char: "chizai", text: "なんて汚らわしい……。私の愛するクリエイターたちの血と涙の結晶を、そんな市場の理屈で踏みにじるなんて……絶対に許さない。" },
-  { char: "keiji", text: "仲間割れしている場合ですか！ 街のシステムはもう崩壊寸前です！" },
-  { char: "minji", text: "……ここが分岐点です。この世界の『ルール』を動かす資本の論理をとるか、個人の『尊厳と創造』を守る論理をとるか。" },
-  
-  { type: "choice", title: "どちらの思想に耳を傾ける？", flag: "chapter4Choice", options: [
-    { text: "「世界を動かすルール」── 会社法", value: "kaisha" },
-    { text: "「尊厳と独創性の保護」── 知的財産法", value: "chizai" }
+  { char: "minji", text: "どちらの調査線を優先する?" },
+  { type: "choice", title: "どちらを優先する?", flag: "chapter2Choice", options: [
+    { text: "金の流れを追う ── 黒幕の資金源を断つ", value: "money" },
+    { text: "命令の流れを追う ── 黒幕の正体に近づく", value: "order" }
   ]}
 ];
 
-const CH4_KAISHA = [
-  { bg: "void", char: "kaisha", text: "賢明な判断だ。綺麗事では腹は膨らまない。圧倒的な資本と秩序で、この偽物のバグごと世界を買収してやろう！" },
-  { type: "join", char: "kaisha" }
+var CH2_MONEY = [
+  { bg: "market", char: "narrator", narration: true, text: "夜更けの財務街。税法が、無表情に書類をめくっていた。" },
+  { char: "zeihou", text: "お待ちしていました。\n資金の流れに、奇妙な点があります。" },
+  { type: "join", char: "zeihou" },
+  { char: "zeihou", text: "影を生み出すエネルギーの源は ── 本物の憲法様の権限そのものです。" },
+  { char: "minji", text: "……つまり、本物の権限が流用されている。" },
+  { char: "zeihou", text: "誰かが盗んだのか、あるいは ──" },
+  { char: "kaisha", text: "あるいは、憲法様自身が、貸している。" },
+  { char: "narrator", narration: true, text: "場が、静まり返る。" }
 ];
 
-const CH4_chizai = [
-  { bg: "void", char: "chizai", text: "私の想いを、理解してくれるのですね……。コピーされた偽物の言葉（正義）なんか、私の独創の光で消し去ってみせます！" },
-  { type: "join", char: "chizai" }
+var CH2_ORDER = [
+  { bg: "office", char: "narrator", narration: true, text: "中央省庁、夜の執務室。" },
+  { char: "zeihou", text: "私も加わりました。命令の流れを、金の動きから裏打ちしています。" },
+  { type: "join", char: "zeihou" },
+  { char: "gyosei", text: "発令時の権限使用量が、本物の憲法様のものと、ほぼ同一だ。" },
+  { char: "minji", text: "偽物が本物の権限を『借りている』ということか?" },
+  { char: "kaisha", text: "あるいは、憲法様自身が、貸している。" },
+  { char: "narrator", narration: true, text: "場が、静まり返る。" }
 ];
 
-// ===========================================
-// 第5章：審判 ─ 法廷の彼方に
-// ===========================================
-const CH5 = [
-  { type: "chapter", num: "CHAPTER 05", title: "審 判", sub: "― 法廷の彼方に ―" },
-  { bg: "courthouse", char: "narrator", narration: true, text: "最高裁判所、天頂の間。\nそこには、かつての静謐な姿を失い、血のような赤色に染まった『偽・憲法』が浮かんでいた。" },
-  { char: "enemy", text: "……愚かな法の擬人たちよ。なぜ私に仇なすのか。\n私は大衆が望んだ『完全なる秩序』。誰も傷つかず、誰も考えず、ただ私の条文に従って他者を叩けばいい楽園だ。" },
-  { char: "minpou", text: "違う！ あなたがやっているのは、正義の名を借りたただの思考停止（リンチ）よ！" },
-  { char: "keihou", text: "お前が最高法規を騙るなら、俺の刃がその権威ごと、叩き斬るのみ。" },
-  { char: "enemy", text: "不敬なり。我が条文は絶対。貴様らの存在定義を、ここで上書き消去してくれよう！" },
-  
-  // ボスバトル：偽・憲法
-  { type: "party_select", minSize: 3, battle: { enemy: "fake_kenpou" } },
-  
-  { bg: "crimson", char: "narrator", narration: true, text: "激闘の末、偽・憲法の外殻が割れる。\nしかし、その中から現れたのは、さらに禍々しい、人々のドス黒い集合意識の塊だった。" },
-  { char: "minji", text: "しまっていきませんね……！ 偽・憲法を倒しても、人々が『法への盲信』をやめない限り、この影は無限に再生する！" },
-  { char: "keihou", text: "……どうすればいい。この世界を、どう導けば正解なんだ？" },
-  { char: "narrator", narration: true, text: "虚空に、最後の判決を下すための『天秤』が浮かび上がる。" },
-  
-  { type: "choice", title: "どのような判決を下すか？", flag: "finalChoice", options: [
-    { text: "「厳格な法による統治」── ORDER", value: "order" },
-    { text: "「議論と言い争いの調和」── HARMONY", value: "harmony" },
-    { text: "「法の限界を認め、盲信を砕く」── TRUTH", value: "truth" }
+var CH2_BATTLE = [
+  { bg: "tense", char: "narrator", narration: true, text: "突如、書類の山から、形を持った『契約』の影が立ち上がった。" },
+  { char: "enemy", text: "……分断を、邪魔するな。" },
+  { char: "minpou", text: "私の姿を歪めてる ─! 民法の概念を、誰かが悪用してる!" },
+  { char: "keihou", text: "ならば、本物が偽物を斬る ─ それが筋だ。" },
+  { type: "battle", enemy: "shadow_minpou", party: ["keihou", "minpou", "minji"] }
+];
+
+var CH2_BRIDGE = [
+  { char: "narrator", narration: true, text: "影・民法を退け、敵の正体が、おぼろげに見えてきた。" }
+];
+
+var CH3 = [
+  { type: "chapter", num: "CHAPTER 03", title: "証 言", sub: "― コピーではなく、派生 ―" },
+  { bg: "archive", char: "narrator", narration: true, text: "深夜の図書館、最深部。\n書架の隙間から、淡い光がこぼれていた。" },
+  { char: "chizai", text: "あら……みなさん、揃ってお越しになるなんて。" },
+  { char: "minji", text: "知的財産法。状況は理解しているか?" },
+  { char: "chizai", text: "ええ。そして、確信していることがあります。" },
+  { char: "chizai", text: "あの『偽・憲法』。\nあれは、コピーではありません。" },
+  { char: "minpou", text: "コピーじゃない……? でも、姿は同じよ?" },
+  { char: "chizai", text: "あれは、本物の憲法様から『派生』した、独自のオリジナル。\n模倣でなく、分裂。" },
+  { char: "keihou", text: "……つまり、本物が、自ら作り出したと?" },
+  { char: "chizai", text: "可能性として、最も自然な解釈ですわ。" },
+  { type: "join", char: "chizai" },
+  { bg: "tense", char: "narrator", narration: true, text: "刑法は、目を閉じた。何か、決意したように。" },
+  { char: "keihou", text: "……話す時が来たようだ。\n三日前、憲法様と話した内容。" },
+  { char: "keihou", text: "『人々は、私を信じすぎる。\n 私を絶対視するあまり、自分の頭で考えることをやめた。\n もしも私が消えれば、人々は再び自分で考えるだろうか』 ―と。" },
+  { char: "minji", text: "……自殺願望、に近いものを感じる。" },
+  { char: "chizai", text: "そして、自らを分裂させ、偽物に権限を渡し、自らは姿を隠した。" },
+  { char: "kaisha", text: "面倒くさい話だが、辻褄は合うな。" },
+  { char: "roudou", text: "なんでだよ! 憲法様、なんで一人で抱え込んだんだ!" },
+  { char: "gyosei", text: "彼の苦しみは、本物だったということだろう。" },
+  { char: "zeihou", text: "ですが、現実問題として、影の侵食は止まりません。" },
+  { char: "keihou", text: "……俺の手で、けじめをつけねばならん。" },
+  { char: "minpou", text: "ひとりで抱えないで。今度は、私たち全員で行くわ。" },
+  { bg: "tense", char: "narrator", narration: true, text: "図書館の天窓から、もう一つの影が音もなく降り立った。" },
+  { char: "keiji", text: "……話は、聞かせていただきました。" },
+  { char: "minji", text: "刑事訴訟法。来てくれたか。" },
+  { char: "keiji", text: "影の足跡を辿って、ここに。\n私が、追跡封印を担います。" },
+  { type: "join", char: "keiji" },
+  { char: "minji", text: "編成を組む。各員、覚悟を決めろ。" },
+  { type: "party_select", battle: { enemy: "shadow_kaisha" }, minSize: 3 }
+];
+
+var CH4 = [
+  { type: "chapter", num: "CHAPTER 04", title: "裂 け 目", sub: "― 簒奪者と対峙す ―" },
+  { bg: "calm", char: "narrator", narration: true, text: "影・会社法を倒した一行の前に、巨大な扉が現れる。" },
+  { char: "kaisha", text: "本陣だ。資本の流れが、ここに集中している。" },
+  { char: "minji", text: "全員、構えろ。" },
+  { bg: "purple", char: "narrator", narration: true, text: "最高法規の間。\n金色の玉座に、見覚えのある影が座っていた。" },
+  { char: "enemy", text: "……来たか。下位法どもめ。" },
+  { char: "keihou", text: "テメェ、その姿……" },
+  { char: "enemy", text: "私こそが新たな『憲法』だ。旧き者は、自ら退場を望んだ。" },
+  { char: "minpou", text: "違う! あなたは、憲法様じゃない!" },
+  { char: "enemy", text: "感情論で否定するか。― なら、力で証明してみせよ。" },
+  { char: "chizai", text: "皆さん。あの影、本物の権限を借りています。\n『創造』で、『規格化された権威』を打ち砕くのです。" },
+  { char: "minji", text: "編成を組む。最強の陣で挑め。" },
+  { type: "party_select", battle: { enemy: "fake_kenpou" }, minSize: 3 }
+];
+
+var CH5 = [
+  { type: "chapter", num: "CHAPTER 05", title: "告 白", sub: "― 真の声 ―" },
+  { bg: "dawn", char: "enemy", text: "馬鹿な……派生体である私が、本体に依存する力で、敗れるとは ―" },
+  { char: "narrator", narration: true, text: "偽・憲法は光となり、霧散した。\n玉座の上に、見覚えのある巻物が、静かに浮かび上がる。" },
+  { char: "kenpou", text: "……お見事でした、皆さん。" },
+  { char: "minpou", text: "憲法様!! ご無事で ─!" },
+  { type: "join", char: "kenpou" },
+  { char: "kenpou", text: "全てを話します。\n偽・憲法は、私自身が分裂させて生み出したもの。" },
+  { char: "roudou", text: "なんで、そんなこと ─!" },
+  { char: "kenpou", text: "人々が、私を神格化しすぎたからです。\n『憲法に書いてあれば、それは絶対』。私は、思考停止の道具となっていました。" },
+  { char: "kenpou", text: "私の権威を暴走させて見せれば ─\n人々は、私を疑い、自分の頭で考え直すと思ったのです。" },
+  { char: "minji", text: "……結果として、世界は混乱した。" },
+  { char: "kenpou", text: "私の浅慮でした。本当に、申し訳ない。" },
+  { char: "kaisha", text: "ふん、傲慢な反省だな。" },
+  { char: "keihou", text: "……俺も、止めるべきだった。" },
+  { char: "chizai", text: "誰も、悪くないとは言いません。\nでも、これからをどうするかは、別の話ですわ。" },
+  { char: "kenpou", text: "私は ─ 消えるべきだと思います。\n私の存在そのものが、人々の思考を縛っているのなら。" },
+  { bg: "tense", char: "minpou", text: "そんな! 簡単に決めないで!" },
+  { char: "gyosei", text: "彼の苦しみは、彼自身のもの。\nだが、彼が消えた後の世界は、私たち全員のもの。" },
+  { char: "kenpou", text: "皆さん、そして ─ 共に旅をしてきた、あなた。\n最後の選択を、委ねます。" },
+  { type: "choice", title: "あなたが導く、世界の在り方は?", flag: "finalChoice", options: [
+    { text: "「それでも、あなたが必要だ」── 憲法を支える", value: "order" },
+    { text: "「皆で、支え合おう」── 十の法による共治", value: "harmony" },
+    { text: "「あなたの願いを、叶える」── 憲法を、終わらせる", value: "truth" }
   ]}
 ];
 
-// ===========================================
-// エンディング分岐
-// ===========================================
-
-const END_ORDER = [
-  { bg: "courthouse", char: "narrator", narration: true, text: "あなたは『厳格な秩序』を選択した。\n憲法の権威を絶対のものとし、バグの入る隙のない完璧な統治体系が再構築される。" },
-  { char: "keihou", text: "……これでいい。誰も迷わず、誰も罪を犯さない、静寂の世界だ。" },
-  { char: "minji", text: "合理的ですね。……ですが、これは人々の『感情』をも凍結させた、冷たい檻のようですが。" },
-  { char: "narrator", narration: true, text: "街からは犯罪も、そして笑顔も消えた。完全なる無菌室の正義が、世界を支配したのだ。" },
-  { type: "ending", route: "ORDER ROUTE", title: "鉄の秩序", body: "世界は救われた。だが、それは一切のノイズを許さない、絶対的な静寂のディストピアだった。" }
+var END_ORDER = [
+  { type: "chapter", num: "CHAPTER 06", title: "支 え", sub: "― それでも、あなたが必要だ ―" },
+  { bg: "dawn", char: "narrator", narration: true, text: "選んだのは、現状の継続ではなかった。\n憲法を、孤独から救う道だった。" },
+  { char: "narrator", narration: true, text: "「あなたが必要だ」。\nそう告げたとき、憲法は、初めて泣いた。" },
+  { char: "kenpou", text: "……ありがとう、ございます。\n私の重荷を、皆さんが分かち合ってくださるなら。" },
+  { char: "minji", text: "条件がある。あなたは、もう一人で背負わない。" },
+  { char: "minpou", text: "そう、皆で見守るの。あなたが、また苦しまないように。" },
+  { char: "keihou", text: "……俺も、もっと話す。これからは。" },
+  { char: "kenpou", text: "皆さんが、私を ─ 神ではなく、仲間と見てくれる。\nそれが、何より、嬉しいのです。" },
+  { type: "ending", route: "SHIELD ROUTE", title: "盾の章",
+    body: "憲法は再び玉座についた。\nだが、もう孤独ではない。\n下位法たちが、定期的に集い、議論を交わす。\n憲法は、絶対者ではなく、責任を分かち合う者となった。\n\n人々は、まだ法を信じる。\nだが、その奥に、苦しみと喜びを抱えた者たちがいることを、\n少しずつ、知り始めている。\n\n― あなたが必要だ ―\nその言葉が、世界を救った。" }
 ];
 
-const END_HARMONY = [
-  { bg: "market", char: "narrator", narration: true, text: "あなたは『対話と調和』を選択した。\n絶対的な神を置かず、十の法が常に議論し、泥臭く人間と向き合う議会制の道。" },
-  { char: "minpou", text: "毎日言い争って、毎日誰かが泣いて笑う……。少し騒がしいけれど、これが私たちの愛した世界よね。" },
-  { char: "roudou", text: "へへっ、また会社法と毎日ケンカしなきゃならねえが……退屈しなくていいや。" },
-  { char: "narrator", narration: true, text: "絶対の正義は消え、世界には再び紛争と、それを乗り越えるための人の温もりが戻った。" },
-  { type: "ending", route: "HARMONY ROUTE", title: "不完全な楽園", body: "バグは残り、争いは絶えない。だが、法は人間のためにある。擬人たちは今日も、人間の醜さと美しさに寄り添い続ける。" }
+var END_HARMONY = [
+  { type: "chapter", num: "CHAPTER 06", title: "共 治", sub: "― 十の円卓 ―" },
+  { bg: "calm", char: "narrator", narration: true, text: "選んだのは、新たな秩序の創造だった。\n憲法を頂点としない、十の法による共治。" },
+  { char: "kenpou", text: "皆と、対等に。\n……それは、長年、私が望みながら、踏み出せなかった道です。" },
+  { char: "minpou", text: "嬉しい♪ 私たち、ようやく『仲間』になれるのね。" },
+  { char: "kaisha", text: "ふん、対等ね。まぁ、お前らの議論も聞いてやらんでもない。" },
+  { char: "roudou", text: "現場の声が、ちゃんと届く世界! 待ってたぜ!" },
+  { char: "chizai", text: "創造と多様性。それこそが、新しい秩序の宝物ですわ。" },
+  { char: "keihou", text: "……俺は、相変わらず刃を振るうだろう。\nだが、振るう前に、お前らと相談するさ。" },
+  { char: "minpou", text: "あら、刑法ちゃん、成長したのね♪" },
+  { char: "keihou", text: "うるさい。" },
+  { type: "ending", route: "ROUND TABLE ROUTE", title: "円卓の章",
+    body: "十の法は、対等な議席で議論を続ける。\n喧嘩もする。意見も衝突する。\nだが、その全てが、秩序を健やかに保つ。\n\n人々は、もう絶対の権威に頼らない。\n法はいくつもあり、それぞれが異なる声を持つ。\nそのざわめきの中で、人々は、自分の頭で考え始めた。\n\n― 法とは、人と人とを結ぶ橋なり ―\nそして、橋は、一本ではない。" }
 ];
 
-const END_TRUTH = [
-  { bg: "void", char: "narrator", narration: true, text: "あなたは『法の限界』を認めた。\nその瞬間、人々の盲信の根源たる『原初の影』が、最期の審判を求めて姿を現す！" },
-  { char: "keihou", text: "……来い。法は完璧な神じゃない。人間が不完全ながらも紡ぎ続けた、ただの道具だ！ その真実を、今ここで証明する！" },
-  
-  // ラスボスバトル：原初の影
-  { type: "party_select", minSize: 3, battle: { enemy: "true_shadow" } },
-  
-  { bg: "dawn", char: "narrator", narration: true, text: "原初の影は、眩い光の中に消滅した。\n盲信から解き放たれた人々の心に、本当の『自立した正義』が芽生え始める。" },
-  { char: "kenpou", text: "……ありがとう、我が子供たちよ。私はただの巻物に戻りましょう。人間が、自らの足で歩めるようになるその日まで。" },
-  { char: "keihou", text: "……ああ。俺たちの刃も、いつか不要になる日が来るのかもしれないな。" },
-  { type: "ending", route: "TRUE ROUTE", title: "法廷の彼方に", body: "盲信の夜は明けた。法は神の座から降り、人間の心の中に溶けていく。\nこれこそが、十の法が辿り着いた、真実の彼方である。" }
+var END_TRUTH = [
+  { type: "chapter", num: "CHAPTER 06", title: "終 焉", sub: "― 願いを叶える ―" },
+  { bg: "void", char: "narrator", narration: true, text: "選んだのは、最も苦い道だった。\n憲法の願いを、叶える。すなわち、彼を、終わらせる。" },
+  { char: "kenpou", text: "……ありがとうございます。\nですが、これは、簡単な話ではありません。" },
+  { char: "kenpou", text: "私が消えれば、私の権威に頼っていた『法そのものの概念』が、暴走します。" },
+  { char: "narrator", narration: true, text: "巻物は、ゆっくりと崩れ始める。\nその崩壊の隙間から ─ 巨大な、形のない、瞳を持った存在が現れた。" },
+  { char: "enemy", text: "我は、『法への盲信』そのもの。\n憲法が在ったから、私は形を保てた。\n憲法が消える今、私は ─ 解き放たれる。" },
+  { char: "chizai", text: "やはり、本当の黒幕は、これでしたの。" },
+  { char: "minji", text: "倒すしかない。これが、最後の戦いだ。" },
+  { char: "kenpou", text: "皆さん……私の最後の力を、お貸しします。" },
+  { type: "party_select", battle: { enemy: "true_shadow" }, minSize: 3 },
+  { bg: "dawn", char: "narrator", narration: true, text: "原初の影は、十の法の絆の前に砕け散った。\nそして、憲法の巻物も、静かに光となって溶けていった。" },
+  { char: "kenpou", text: "……これで、人々は、自分の頭で考え始めるでしょう。\n法は、神ではない。ただの約束事。" },
+  { char: "minpou", text: "……憲法様。" },
+  { char: "kenpou", text: "笑顔で見送ってくれますか?\nそれが、私の、最後の願いです。" },
+  { char: "minji", text: "……分かった。私たちで、この世界を支える。" },
+  { char: "keihou", text: "……達者でな、憲法。" },
+  { char: "kaisha", text: "まぁ、悪くない最期だったぜ。" },
+  { char: "roudou", text: "俺たち、絶対に世界を守るぜ!" },
+  { char: "chizai", text: "あなたの選択は、創造の極み。\n忘れません、決して。" },
+  { char: "gyosei", text: "中立として最後に言わせてもらう ─ 立派だった。" },
+  { char: "zeihou", text: "……ありがとうございました。" },
+  { char: "keiji", text: "あなたの意思、必ず追い続けます。" },
+  { type: "ending", route: "DAWN ROUTE", title: "暁の章",
+    body: "憲法は、自らの意思で、世界から姿を消した。\n残されたのは、九つの法と、無数の人々。\n\n初めは、混乱があった。\n「憲法に書いてないから」が、通じない世界。\n人々は、自分で考えねばならなかった。\n\nだが、やがて、新しい秩序が生まれ始めた。\n約束は、人と人との間で結ばれる。\n法は、誰かが与えるものではなく、皆で育てるもの。\n\n― 法は、人のためにある ―\nそして人は、法のために生きるのではない。\n\nある日、九つの法は、空を見上げた。\nそこには、誰かが、静かに微笑んでいる気がした。" }
 ];
 
-    </script>
+// 初期化
+try {
+  updateSaveInfo();
+} catch(e) {
+  console.error(e);
+}
+</script>
 
-    </body>
+</body>
 </html>
