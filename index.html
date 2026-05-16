@@ -20,6 +20,8 @@
     position: relative;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
+    height: calc(var(--vh, 1vh) * 100);
     overflow: hidden;
     background: #0a1428;
   }
@@ -36,8 +38,10 @@ flex-direction: column;
 #title-scene {
 justify-content: center;
 align-items: center;
-padding: 30px 20px;
+padding: 30px 20px 50px;
 text-align: center;
+overflow-y: auto;
+-webkit-overflow-scrolling: touch;
 }
 .title-sub-en {
 letter-spacing: 0.4em;
@@ -241,8 +245,9 @@ border-color: #d4af37;
 
 /* パーティ編成 */
 #party-scene {
-padding: 14px;
+padding: 14px 14px 30px;
 overflow-y: auto;
+-webkit-overflow-scrolling: touch;
 align-items: center;
 }
 .header-block {
@@ -358,9 +363,13 @@ cursor: not-allowed;
 }
 
 /* バトル */
-#battle-scene { padding: 8px; }
+#battle-scene {
+padding: 8px 8px 20px;
+overflow-y: auto;
+-webkit-overflow-scrolling: touch;
+}
 .battle-bg {
-position: absolute;
+position: fixed;
 top: 0; left: 0; right: 0; bottom: 0;
 z-index: 0;
 background: #1a0606;
@@ -382,7 +391,6 @@ flex-direction: column;
 align-items: center;
 justify-content: center;
 padding: 8px 0;
-min-height: 200px;
 }
 .enemy-card {
 width: 150px;
@@ -683,11 +691,12 @@ cursor: pointer;
 
 /* エンディング */
 #ending-scene {
-justify-content: center;
+justify-content: flex-start;
 align-items: center;
-padding: 30px 22px;
+padding: 30px 22px 40px;
 text-align: center;
 overflow-y: auto;
+-webkit-overflow-scrolling: touch;
 }
 .ending-content { max-width: 400px; }
 .ending-title {
@@ -794,8 +803,9 @@ margin-top: 12px;
 
 /* 図鑑 */
 #codex-scene {
-padding: 14px;
+padding: 14px 14px 30px;
 overflow-y: auto;
+-webkit-overflow-scrolling: touch;
 align-items: center;
 }
 .codex-tabs {
@@ -2315,6 +2325,16 @@ var END_TRUTH = [
 ];
 
 // 初期化
+function setRealVh() {
+  var vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', vh + 'px');
+}
+setRealVh();
+window.addEventListener('resize', setRealVh);
+window.addEventListener('orientationchange', function() {
+  setTimeout(setRealVh, 200);
+});
+
 try {
   updateSaveInfo();
 } catch(e) {
